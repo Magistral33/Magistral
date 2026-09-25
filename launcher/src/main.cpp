@@ -24,8 +24,15 @@
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+#include <QDir>
+#include <QFileInfo>
+
 int main(int argc, char *argv[])
 {
+    // Меняем cwd на директорию exe — все относительные пути
+    // (crash-handler, плагины Qt, cwd-зависимые данные) будут от неё
+    QDir::setCurrent(QFileInfo(QString::fromLocal8Bit(argv[0])).absolutePath());
+
     setup_crash_handler("../logs/launcher-crash.log");
 
     QApplication a(argc, argv);
