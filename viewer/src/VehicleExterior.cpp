@@ -373,7 +373,14 @@ bool VehicleExterior::load_io_controller_module(const std::string &cfg_path, Cfg
     while (!secNode.isNull())
     {
         QString module_name = "";
-        cfg.getString(secNode, "IOControllerModule", module_name);        
+        cfg.getString(secNode, "IOControllerModule", module_name);
+
+        // Пропускаем вагоны без IOController (пассажирские — это норма)
+        if (module_name.isEmpty())
+        {
+            secNode = cfg.getNextSection();
+            continue;
+        }        
 
         const FileSystem &fs = FileSystem::getInstance();
         auto modules_dir = fs.getModulesDir();

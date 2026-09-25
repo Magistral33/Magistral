@@ -365,7 +365,7 @@ autopilot_timetable_t ScenarioManager::loadTrainTimetable(int train_idx)
 
     if (!cfg.load(QString(path.c_str())))
     {
-        Journal::instance()->error("File of timetable " + QString(path.c_str()) + " not found");
+        Journal::instance()->warning("No timetable file " + QString(path.c_str()) + " - train runs without schedule");
         return autopilot_timetable_t();
     }
 

@@ -1,4 +1,4 @@
-#include    <Application.h>
+﻿#include    <Application.h>
 #include    <Geometry.h>
 #include    <filesystem-utils.h>
 #include    <Logger.h>
@@ -87,7 +87,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
                                 bool compress_texture,
                                 int num_threads)
 {
-    // Преобразуем пути к платформоспецифичному виду
+    // РџСЂРµРѕР±СЂР°Р·СѓРµРј РїСѓС‚Рё Рє РїР»Р°С‚С„РѕСЂРјРѕСЃРїРµС†РёС„РёС‡РЅРѕРјСѓ РІРёРґСѓ
     path_to_native_separator(in_dmd_route_path);
     path_to_native_separator(out_gltf_route_path);
 
@@ -97,15 +97,15 @@ bool Application::convert_route(std::string &in_dmd_route_path,
     using LabelTextureSmooth = std::tuple<Label, RelativeTexturePath, RelativeTexturePath, bool>;
     std::string line_buffer;
 
-    // Список объектов, используемых в .map маршрута
+    // РЎРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ, РёСЃРїРѕР»СЊР·СѓРµРјС‹С… РІ .map РјР°СЂС€СЂСѓС‚Р°
     std::set<Label> map_objects;
 
     if (only_used_at_map)
     {
-        // Ищем расположение объектов маршрута - файл route1.map
+        // РС‰РµРј СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ РѕР±СЉРµРєС‚РѕРІ РјР°СЂС€СЂСѓС‚Р° - С„Р°Р№Р» route1.map
         std::ifstream route1_map = std::ifstream();
 
-        // Сначала пробуем найти конвертированный .map
+        // РЎРЅР°С‡Р°Р»Р° РїСЂРѕР±СѓРµРј РЅР°Р№С‚Рё РєРѕРЅРІРµСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ .map
         std::string map_path = combine_path(out_gltf_route_path, "topology");
         map_path = combine_path(map_path, "map");
         map_path = combine_path(map_path, "route1.map");
@@ -118,7 +118,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         {
             LOG_WARN("Warn: failed to open converted route1.map: %s", map_path.c_str());
 
-            // Пробуем найти оригинальный .map
+            // РџСЂРѕР±СѓРµРј РЅР°Р№С‚Рё РѕСЂРёРіРёРЅР°Р»СЊРЅС‹Р№ .map
             map_path = combine_path(in_dmd_route_path, "route1.map");
             route1_map.open(map_path, std::ios::in);
             if (route1_map.is_open())
@@ -134,23 +134,23 @@ bool Application::convert_route(std::string &in_dmd_route_path,
 
         while (std::getline(route1_map, line_buffer))
         {
-            // Пустое название объекта
+            // РџСѓСЃС‚РѕРµ РЅР°Р·РІР°РЅРёРµ РѕР±СЉРµРєС‚Р°
             if (line_buffer.empty() || (*(line_buffer.begin()) == ',') )
             {
                 continue;
             }
-            // Строка с объектом должна заканчиваться точкой с запятой
+            // РЎС‚СЂРѕРєР° СЃ РѕР±СЉРµРєС‚РѕРј РґРѕР»Р¶РЅР° Р·Р°РєР°РЅС‡РёРІР°С‚СЊСЃСЏ С‚РѕС‡РєРѕР№ СЃ Р·Р°РїСЏС‚РѕР№
             if (*(line_buffer.end() - 1) != ';')
             {
                 continue;
             }
-            // Строка с объектом должна содержать шесть запятых - разделителей
+            // РЎС‚СЂРѕРєР° СЃ РѕР±СЉРµРєС‚РѕРј РґРѕР»Р¶РЅР° СЃРѕРґРµСЂР¶Р°С‚СЊ С€РµСЃС‚СЊ Р·Р°РїСЏС‚С‹С… - СЂР°Р·РґРµР»РёС‚РµР»РµР№
             if (std::count(line_buffer.begin(), line_buffer.end(), ',') != 6)
             {
                 continue;
             }
 
-            // Читаем первый элемент в строке - сокращённое название объекта
+            // Р§РёС‚Р°РµРј РїРµСЂРІС‹Р№ СЌР»РµРјРµРЅС‚ РІ СЃС‚СЂРѕРєРµ - СЃРѕРєСЂР°С‰С‘РЅРЅРѕРµ РЅР°Р·РІР°РЅРёРµ РѕР±СЉРµРєС‚Р°
             std::string label = "";
             std::istringstream ss(line_buffer);
             if (std::getline(ss, label, ','))
@@ -169,7 +169,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         route1_map.close();
     }
 
-    // Читаем список объектов из базы маршрута
+    // Р§РёС‚Р°РµРј СЃРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ РёР· Р±Р°Р·С‹ РјР°СЂС€СЂСѓС‚Р°
     std::string ref_path = combine_path(in_dmd_route_path, "objects.ref");
     std::ifstream objects_ref(ref_path, std::ios::in);
     if (!objects_ref.is_open())
@@ -179,7 +179,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
     }
     LOG_INFO("Info: opened ZDSimulator's objects.ref: %s", ref_path.c_str());
 
-    // Список моделей, и списки сокращённых имён и текстур к этим моделям
+    // РЎРїРёСЃРѕРє РјРѕРґРµР»РµР№, Рё СЃРїРёСЃРєРё СЃРѕРєСЂР°С‰С‘РЅРЅС‹С… РёРјС‘РЅ Рё С‚РµРєСЃС‚СѓСЂ Рє СЌС‚РёРј РјРѕРґРµР»СЏРј
     struct mutexed_objects
     {
     public:
@@ -222,7 +222,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
             continue;
         }
 
-        // Исходная информация - сокращённое имя, путь к модели, путь к текстуре
+        // РСЃС…РѕРґРЅР°СЏ РёРЅС„РѕСЂРјР°С†РёСЏ - СЃРѕРєСЂР°С‰С‘РЅРЅРѕРµ РёРјСЏ, РїСѓС‚СЊ Рє РјРѕРґРµР»Рё, РїСѓС‚СЊ Рє С‚РµРєСЃС‚СѓСЂРµ
         std::string label, relative_dmd_model_path, relative_texture_path, out_relative_texture_path;
         ss >> label >> relative_dmd_model_path >> relative_texture_path;
         if (is_slash(label.front())
@@ -244,7 +244,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
             continue;
         }
 
-        // Проверяем что сокращённое имя уникально
+        // РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СЃРѕРєСЂР°С‰С‘РЅРЅРѕРµ РёРјСЏ СѓРЅРёРєР°Р»СЊРЅРѕ
         if (unique_refs.find(label) == unique_refs.end())
         {
             unique_refs.insert(label);
@@ -256,7 +256,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
             continue;
         }
 
-        // Если прочтён файл .map - проверяем что сокращённое имя используется
+        // Р•СЃР»Рё РїСЂРѕС‡С‚С‘РЅ С„Р°Р№Р» .map - РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СЃРѕРєСЂР°С‰С‘РЅРЅРѕРµ РёРјСЏ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
         if (only_used_at_map && (map_objects.find(label) == map_objects.end()))
         {
             LOG_WARN("Warn: ref \"%s\":", line_buffer.c_str());
@@ -264,7 +264,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
             continue;
         }
 
-        // Запоминаем, что нашли модель, на которую ZDS вешает источник света
+        // Р—Р°РїРѕРјРёРЅР°РµРј, С‡С‚Рѕ РЅР°С€Р»Рё РјРѕРґРµР»СЊ, РЅР° РєРѕС‚РѕСЂСѓСЋ ZDS РІРµС€Р°РµС‚ РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
         if (label == "light")
         {
             light_found = true;
@@ -277,7 +277,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         auto texture_path_it = textures_path_and_out_path.find(relative_texture_path);
         if (texture_path_it == textures_path_and_out_path.end())
         {
-            // Путь к текстуре
+            // РџСѓС‚СЊ Рє С‚РµРєСЃС‚СѓСЂРµ
             std::string in_texture_path =
                 in_dmd_route_path + relative_texture_path;
             path_to_native_separator(in_texture_path);
@@ -340,12 +340,12 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         auto it = objects.objects.find(relative_dmd_model_path);
         if (it == objects.objects.end())
         {
-            // Добавляем файл модели, её сокращённое наименование, текстуру и сглаживание
+            // Р”РѕР±Р°РІР»СЏРµРј С„Р°Р№Р» РјРѕРґРµР»Рё, РµС‘ СЃРѕРєСЂР°С‰С‘РЅРЅРѕРµ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ, С‚РµРєСЃС‚СѓСЂСѓ Рё СЃРіР»Р°Р¶РёРІР°РЅРёРµ
             objects.objects.insert({ relative_dmd_model_path, {{label, relative_texture_path, out_relative_texture_path, smooth}} });
         }
         else
         {
-            // К уже добавленой модели ещё вариант наименования, текстуры и сглаживания
+            // Рљ СѓР¶Рµ РґРѕР±Р°РІР»РµРЅРѕР№ РјРѕРґРµР»Рё РµС‰С‘ РІР°СЂРёР°РЅС‚ РЅР°РёРјРµРЅРѕРІР°РЅРёСЏ, С‚РµРєСЃС‚СѓСЂС‹ Рё СЃРіР»Р°Р¶РёРІР°РЅРёСЏ
             it->second.push_back({label, relative_texture_path, out_relative_texture_path, smooth});
             it->second.shrink_to_fit();
         }
@@ -361,12 +361,12 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         return false;
     }
 
-    // Создаем каталог под новый маршрут
+    // РЎРѕР·РґР°РµРј РєР°С‚Р°Р»РѕРі РїРѕРґ РЅРѕРІС‹Р№ РјР°СЂС€СЂСѓС‚
     fs::create_directories(out_gltf_route_path);
-    // Создаем каталог под текстуры
+    // РЎРѕР·РґР°РµРј РєР°С‚Р°Р»РѕРі РїРѕРґ С‚РµРєСЃС‚СѓСЂС‹
     fs::create_directory(combine_path(out_gltf_route_path, "textures"));
 
-    // Новый список ссылок на файлы моделей
+    // РќРѕРІС‹Р№ СЃРїРёСЃРѕРє СЃСЃС‹Р»РѕРє РЅР° С„Р°Р№Р»С‹ РјРѕРґРµР»РµР№
     struct mutexed_map_for_new_objects
     {
     public:
@@ -380,13 +380,13 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         std::mutex mutex;
     } new_objects;
 
-    // Добавляем модель с источником света вместо костыльной модели для ZDS
+    // Р”РѕР±Р°РІР»СЏРµРј РјРѕРґРµР»СЊ СЃ РёСЃС‚РѕС‡РЅРёРєРѕРј СЃРІРµС‚Р° РІРјРµСЃС‚Рѕ РєРѕСЃС‚С‹Р»СЊРЅРѕР№ РјРѕРґРµР»Рё РґР»СЏ ZDS
     if (lights_at_map && light_found)
     {
         new_objects.add_object("light", "/../../data/models/default-objects/light.gltf");
     }
 
-    // Список скопированных/сжатых текстур
+    // РЎРїРёСЃРѕРє СЃРєРѕРїРёСЂРѕРІР°РЅРЅС‹С…/СЃР¶Р°С‚С‹С… С‚РµРєСЃС‚СѓСЂ
     struct mutexed_map_for_ready_textures
     {
     public:
@@ -422,7 +422,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
             std::lock_guard lock(mutex);
             ++models_count;
 
-            // Через std::cerr выдаём прогресс конвертации в GUI
+            // Р§РµСЂРµР· std::cerr РІС‹РґР°С‘Рј РїСЂРѕРіСЂРµСЃСЃ РєРѕРЅРІРµСЂС‚Р°С†РёРё РІ GUI
             const auto cur_time = std::chrono::steady_clock::now();
             if (std::chrono::duration<double> diff = cur_time - prev_time; diff.count() > 0.5)
             {
@@ -437,7 +437,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
     } models_count;
     models_count.models_total = objects.objects.size();
 
-    // Через std::cerr выдаём в GUI прогресс конвертации
+    // Р§РµСЂРµР· std::cerr РІС‹РґР°С‘Рј РІ GUI РїСЂРѕРіСЂРµСЃСЃ РєРѕРЅРІРµСЂС‚Р°С†РёРё
     std::cerr << " (" << 0 << "/" << models_count.models_total << ")";
 
     auto convert = [&](mutexed_objects& _objects,
@@ -454,26 +454,26 @@ bool Application::convert_route(std::string &in_dmd_route_path,
         {
             fs::path model_path = _relative_model_path;
 
-            // Путь к исходной модели
+            // РџСѓС‚СЊ Рє РёСЃС…РѕРґРЅРѕР№ РјРѕРґРµР»Рё
             std::string in_dmd_model_path =
                 _in_dmd_route_path + _relative_model_path;
             path_to_native_separator(in_dmd_model_path);
 
-            // Путь к папке с новым файлом модели
+            // РџСѓС‚СЊ Рє РїР°РїРєРµ СЃ РЅРѕРІС‹Рј С„Р°Р№Р»РѕРј РјРѕРґРµР»Рё
             std::string out_gltf_model_dir =
                 _out_gltf_route_path + model_path.parent_path().string();
 
-            // Относительный путь к файлу с информацией о модели в формате bin
+            // РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ СЃ РёРЅС„РѕСЂРјР°С†РёРµР№ Рѕ РјРѕРґРµР»Рё РІ С„РѕСЂРјР°С‚Рµ bin
             fs::create_directories(_out_gltf_route_path + model_path.parent_path().string() + "/bin");
             std::string out_relative_bin_path = "bin/"s + model_path.stem().string() + ".bin";
 
-            // Создаём модели для всех вариантов текстур
+            // РЎРѕР·РґР°С‘Рј РјРѕРґРµР»Рё РґР»СЏ РІСЃРµС… РІР°СЂРёР°РЅС‚РѕРІ С‚РµРєСЃС‚СѓСЂ
             bool add_texture_name = (_labels_textures_smooth.size() > 1);
             for (const auto& [label, relative_texture_path, out_relative_texture, smooth] : _labels_textures_smooth)
             {
                 fs::path texture_path = _in_dmd_route_path + relative_texture_path;
 
-                // Читаем файл модели
+                // Р§РёС‚Р°РµРј С„Р°Р№Р» РјРѕРґРµР»Рё
                 Geometry model_data;
                 std::string texture_ext = texture_path.extension().string();
                 model_data.is_reversed_texture_coord = (texture_ext != ".tga");
@@ -484,7 +484,7 @@ bool Application::convert_route(std::string &in_dmd_route_path,
                     continue;
                 }
 
-                // Путь к новому файлу модели
+                // РџСѓС‚СЊ Рє РЅРѕРІРѕРјСѓ С„Р°Р№Р»Сѓ РјРѕРґРµР»Рё
                 std::string out_gltf_model_name = model_path.stem().string();
                 if (add_texture_name)
                 {
@@ -526,13 +526,13 @@ bool Application::convert_route(std::string &in_dmd_route_path,
 
                 float change_vertices_Z = 0.0f;
 #if 0
-// По итогам общения с маршрутостроителями,
-// выравнивание мешей с рельсами под УГР на данный момент не нужно
+// РџРѕ РёС‚РѕРіР°Рј РѕР±С‰РµРЅРёСЏ СЃ РјР°СЂС€СЂСѓС‚РѕСЃС‚СЂРѕРёС‚РµР»СЏРјРё,
+// РІС‹СЂР°РІРЅРёРІР°РЅРёРµ РјРµС€РµР№ СЃ СЂРµР»СЊСЃР°РјРё РїРѕРґ РЈР“Р  РЅР° РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РЅРµ РЅСѓР¶РЅРѕ
                 if (   (label.find("track") != label.npos)
                     || (label.find("Track") != label.npos))
                 {
-                    // Поскольку уровень головки рельса в ZDS маршрутах находится не в нуле,
-                    // а поднят в среднем на 0.3114, смещаем меш у моделей рельс (с "track" в имени объекта)
+                    // РџРѕСЃРєРѕР»СЊРєСѓ СѓСЂРѕРІРµРЅСЊ РіРѕР»РѕРІРєРё СЂРµР»СЊСЃР° РІ ZDS РјР°СЂС€СЂСѓС‚Р°С… РЅР°С…РѕРґРёС‚СЃСЏ РЅРµ РІ РЅСѓР»Рµ,
+                    // Р° РїРѕРґРЅСЏС‚ РІ СЃСЂРµРґРЅРµРј РЅР° 0.3114, СЃРјРµС‰Р°РµРј РјРµС€ Сѓ РјРѕРґРµР»РµР№ СЂРµР»СЊСЃ (СЃ "track" РІ РёРјРµРЅРё РѕР±СЉРµРєС‚Р°)
                     change_vertices_Z = -0.3114f;
                 }
 #endif
@@ -543,12 +543,12 @@ bool Application::convert_route(std::string &in_dmd_route_path,
                                         _compress_textures,
                                         change_vertices_Z))
                 {
-                    // Записываем новые модели
+                    // Р—Р°РїРёСЃС‹РІР°РµРј РЅРѕРІС‹Рµ РјРѕРґРµР»Рё
                     _new_objects.add_object(label, model_path.parent_path().string() + '/' + out_gltf_model_name + ".gltf");
                 }
             }
 
-            // Через std::cerr выдаём в GUI прогресс конвертации
+            // Р§РµСЂРµР· std::cerr РІС‹РґР°С‘Рј РІ GUI РїСЂРѕРіСЂРµСЃСЃ РєРѕРЅРІРµСЂС‚Р°С†РёРё
             _models_count.increase();
         }
     };
@@ -631,7 +631,7 @@ bool Application::convert_model(std::string &in_dmd_model_path,
     std::string gltf_directory_path = model_path.parent_path().string();
     fs::create_directories(gltf_directory_path);
 
-    // Относительный путь к файлу с информацией о модели в формате bin
+    // РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ СЃ РёРЅС„РѕСЂРјР°С†РёРµР№ Рѕ РјРѕРґРµР»Рё РІ С„РѕСЂРјР°С‚Рµ bin
     if (out_relative_bin_path.empty())
     {
         out_relative_bin_path = model_path.stem().string() + ".bin";
@@ -643,7 +643,7 @@ bool Application::convert_model(std::string &in_dmd_model_path,
         out_relative_bin_path = out_relative_bin_path + ".bin";
     }
 
-    // Относительный путь к текстуре
+    // РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ Рє С‚РµРєСЃС‚СѓСЂРµ
     if (out_relative_texture_path.empty())
     {
         if (compress_texture)
@@ -1023,9 +1023,9 @@ bool Application::compress_to_ktx2(const std::string& in_texture_path, const std
     ci.numFaces        = 1;
     ci.isArray         = KTX_FALSE;
 
-    // Число mipmap-уровней определяем ЯВНО, так как сами их сгенерируем
+    // Р§РёСЃР»Рѕ mipmap-СѓСЂРѕРІРЅРµР№ РѕРїСЂРµРґРµР»СЏРµРј РЇР’РќРћ, С‚Р°Рє РєР°Рє СЃР°РјРё РёС… СЃРіРµРЅРµСЂРёСЂСѓРµРј
     ci.numLevels       = static_cast<uint32_t>(std::floor(std::log2(std::max(w, h))) + 1);
-    // Не полагаемся на аппратную генерацию - это для несжатых текстур
+    // РќРµ РїРѕР»Р°РіР°РµРјСЃСЏ РЅР° Р°РїРїСЂР°С‚РЅСѓСЋ РіРµРЅРµСЂР°С†РёСЋ - СЌС‚Рѕ РґР»СЏ РЅРµСЃР¶Р°С‚С‹С… С‚РµРєСЃС‚СѓСЂ
     ci.generateMipmaps = KTX_FALSE;
 
     ktxTexture2* Ktexture2 = nullptr;
@@ -1052,12 +1052,12 @@ bool Application::compress_to_ktx2(const std::string& in_texture_path, const std
         return false;
     }
 
-    // Массив под указатели на данные всех уровней, не удаляем эти данные
-    // до сжатия и сохранения текстуры на диск!
+    // РњР°СЃСЃРёРІ РїРѕРґ СѓРєР°Р·Р°С‚РµР»Рё РЅР° РґР°РЅРЅС‹Рµ РІСЃРµС… СѓСЂРѕРІРЅРµР№, РЅРµ СѓРґР°Р»СЏРµРј СЌС‚Рё РґР°РЅРЅС‹Рµ
+    // РґРѕ СЃР¶Р°С‚РёСЏ Рё СЃРѕС…СЂР°РЅРµРЅРёСЏ С‚РµРєСЃС‚СѓСЂС‹ РЅР° РґРёСЃРє!
     std::vector<stbi_uc *> levels_data = {data};
 
-    // Вручную генерируем mipmaps, последовательно уменьшая
-    // размеры текстуры в два раза на каждом уровне
+    // Р’СЂСѓС‡РЅСѓСЋ РіРµРЅРµСЂРёСЂСѓРµРј mipmaps, РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ СѓРјРµРЅСЊС€Р°СЏ
+    // СЂР°Р·РјРµСЂС‹ С‚РµРєСЃС‚СѓСЂС‹ РІ РґРІР° СЂР°Р·Р° РЅР° РєР°Р¶РґРѕРј СѓСЂРѕРІРЅРµ
     for (uint32_t level = 1; level < ci.numLevels; ++level)
     {
         int next_w = std::max(1, w >> 1);
@@ -1065,12 +1065,12 @@ bool Application::compress_to_ktx2(const std::string& in_texture_path, const std
         size = next_w * next_h * 4;
         stbi_uc* next_resized = new stbi_uc[size];
 
-        // Ресемплинг
+        // Р РµСЃРµРјРїР»РёРЅРі
         stbir_resize_uint8(levels_data.back(), w, h, 0,
                            next_resized, next_w, next_h, 0, 4);
         levels_data.push_back(next_resized);
 
-        // Загружаем уровень в ktxTexture
+        // Р—Р°РіСЂСѓР¶Р°РµРј СѓСЂРѕРІРµРЅСЊ РІ ktxTexture
         result = ktxTexture_SetImageFromMemory(Ktexture,
                                                level, 0, 0,
                                                next_resized, size);
@@ -1089,29 +1089,28 @@ bool Application::compress_to_ktx2(const std::string& in_texture_path, const std
     }
 
     ktxBasisParams params = {};
-    params.structSize = sizeof(ktxBasisParams);  // Всегда первым полем
+    params.structSize = sizeof(ktxBasisParams);  // Р’СЃРµРіРґР° РїРµСЂРІС‹Рј РїРѕР»РµРј
 
     // --encode basis-lz
-    params.codec = KTX_BASIS_CODEC_ETC1S;
 
-    // --qlevel (по умолчанию 128)
+    // --qlevel (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 128)
     params.qualityLevel = 128;
 
-    // --clevel (CLI по умолчанию 1, хотя в libktx константа = 2)
-    params.etc1sCompressionLevel = 1;
+    // --clevel (CLI РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 1, С…РѕС‚СЏ РІ libktx РєРѕРЅСЃС‚Р°РЅС‚Р° = 2)
+    params.compressionLevel = 1;
 
-    // Потоки
+    // РџРѕС‚РѕРєРё
     params.threadCount = 1;
 
-    // RDO-пороги (по умолчанию 1.25, применяются при qlevel <= 128)
+    // RDO-РїРѕСЂРѕРіРё (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 1.25, РїСЂРёРјРµРЅСЏСЋС‚СЃСЏ РїСЂРё qlevel <= 128)
     params.endpointRDOThreshold = 1.25f;
     params.selectorRDOThreshold = 1.25f;
 
-    // Автоматический выбор кластеров (по умолчанию)
+    // РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РІС‹Р±РѕСЂ РєР»Р°СЃС‚РµСЂРѕРІ (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
     params.maxEndpoints = 0;
     params.maxSelectors = 0;
 
-    // Флаги по умолчанию
+    // Р¤Р»Р°РіРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
     params.verbose           = KTX_FALSE;
     params.noSSE             = KTX_FALSE;
     params.normalMap         = KTX_FALSE;
@@ -1135,7 +1134,7 @@ bool Application::compress_to_ktx2(const std::string& in_texture_path, const std
         }
     }
 
-    // Освобождаем память от ktx-параметров и от пикселей всех уровней
+    // РћСЃРІРѕР±РѕР¶РґР°РµРј РїР°РјСЏС‚СЊ РѕС‚ ktx-РїР°СЂР°РјРµС‚СЂРѕРІ Рё РѕС‚ РїРёРєСЃРµР»РµР№ РІСЃРµС… СѓСЂРѕРІРЅРµР№
     ktxTexture_Destroy(Ktexture);
     for (auto d : levels_data)
     {
@@ -1257,3 +1256,4 @@ bool Application::set_convert_mode(const cmd_line_t &cmd_line,
 
     return false;
 }
+

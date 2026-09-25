@@ -9,7 +9,7 @@
     </Server>
     <Paths>
         <!-- Пути относительно каталога bin -->
-        <SimulatorPath>simulator</SimulatorPath>
+        <SimulatorPath>bin/simulator.exe</SimulatorPath>
         <RoutesPath>../routes</RoutesPath>
         <LogFile>../logs/server.log</LogFile>
         <PidFile>../server.pid</PidFile>

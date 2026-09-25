@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 //  Server core
 //  (c) SimulatorServer 2026
@@ -93,10 +93,10 @@ void ServerCore::stop()
 
     qInfo() << "Stopping server...";
 
-    // Закрываем сервер для новых подключений
+    // Р—Р°РєСЂС‹РІР°РµРј СЃРµСЂРІРµСЂ РґР»СЏ РЅРѕРІС‹С… РїРѕРґРєР»СЋС‡РµРЅРёР№
     m_server->close();
 
-    // Отключаем всех клиентов
+    // РћС‚РєР»СЋС‡Р°РµРј РІСЃРµС… РєР»РёРµРЅС‚РѕРІ
     {
         QMutexLocker locker(&m_clientsMutex);
         for (auto it = m_clients.begin(); it != m_clients.end(); ++it)
@@ -111,14 +111,14 @@ void ServerCore::stop()
         m_clients.clear();
     }
 
-    // Останавливаем симуляцию
+    // РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРёРјСѓР»СЏС†РёСЋ
     m_simulatorController.stopSimulation();
 
-    // Останавливаем таймеры
+    // РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј С‚Р°Р№РјРµСЂС‹
     m_heartbeatTimer->stop();
     m_statusTimer->stop();
 
-    // Удаляем PID файл
+    // РЈРґР°Р»СЏРµРј PID С„Р°Р№Р»
     QFile::remove(Config::instance().getPidFile());
 
     m_initialized = false;
@@ -167,10 +167,10 @@ void ServerCore::onNewConnection()
 
     emit clientConnected(address);
 
-    // Отправляем список маршрутов
+    // РћС‚РїСЂР°РІР»СЏРµРј СЃРїРёСЃРѕРє РјР°СЂС€СЂСѓС‚РѕРІ
     handleGetRoutes(handler);
 
-    // Отправляем текущий статус
+    // РћС‚РїСЂР°РІР»СЏРµРј С‚РµРєСѓС‰РёР№ СЃС‚Р°С‚СѓСЃ
     QTimer::singleShot(100, this, [this, handler]() {
         sendCurrentStatus(handler);
     });
@@ -194,7 +194,7 @@ void ServerCore::onClientDisconnected(ProtocolHandler* client)
     QString address = client->getClientAddress();
     qInfo() << "Client disconnected:" << address;
 
-    // Удаляем клиента из списка
+    // РЈРґР°Р»СЏРµРј РєР»РёРµРЅС‚Р° РёР· СЃРїРёСЃРєР°
     {
         QMutexLocker locker(&m_clientsMutex);
         QTcpSocket* socket = qobject_cast<QTcpSocket*>(client->parent());
@@ -206,11 +206,11 @@ void ServerCore::onClientDisconnected(ProtocolHandler* client)
 
     emit clientDisconnected(address);
 
-    // client удалится автоматически через deleteLater в ProtocolHandler
+    // client СѓРґР°Р»РёС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё С‡РµСЂРµР· deleteLater РІ ProtocolHandler
 }
 
 //-----------------------------------------------------------------------------
-void ServerCore::sendCurrentStatus(ProtocolHandler* client)          // <-- ДОБАВИТЬ
+void ServerCore::sendCurrentStatus(ProtocolHandler* client)          // <-- Р”РћР‘РђР’РРўР¬
 {
     if (!client || !client->isConnected())
     {
@@ -272,7 +272,7 @@ void ServerCore::onSimulationStarted()
 
     QMutexLocker locker(&m_clientsMutex);
 
-    // Отправляем статус
+    // РћС‚РїСЂР°РІР»СЏРµРј СЃС‚Р°С‚СѓСЃ
     QJsonObject status;
     status["running"] = true;
     status["route"] = m_simulatorController.getCurrentRoute();
@@ -288,7 +288,7 @@ void ServerCore::onSimulationStarted()
         client->sendMessage(message);
     }
 
-    // Отправляем уведомление
+    // РћС‚РїСЂР°РІР»СЏРµРј СѓРІРµРґРѕРјР»РµРЅРёРµ
     QJsonObject notification;
     notification["type"] = "SIMULATION_STARTED";
     notification["route"] = m_simulatorController.getCurrentRoute();
@@ -309,7 +309,7 @@ void ServerCore::onSimulationStopped()
 
     QMutexLocker locker(&m_clientsMutex);
 
-    // Отправляем статус
+    // РћС‚РїСЂР°РІР»СЏРµРј СЃС‚Р°С‚СѓСЃ
     QJsonObject status;
     status["running"] = false;
     status["route"] = "";
@@ -325,7 +325,7 @@ void ServerCore::onSimulationStopped()
         client->sendMessage(message);
     }
 
-    // Отправляем уведомление
+    // РћС‚РїСЂР°РІР»СЏРµРј СѓРІРµРґРѕРјР»РµРЅРёРµ
     QJsonObject notification;
     notification["type"] = "SIMULATION_STOPPED";
 
@@ -420,7 +420,7 @@ void ServerCore::processMessage(ProtocolHandler* client, const QJsonObject& mess
     }
     else if (type == "HEARTBEAT")
     {
-        // Игнорируем
+        // РРіРЅРѕСЂРёСЂСѓРµРј
     }
     else
     {
@@ -641,3 +641,4 @@ void ServerCore::handleGetInfo(ProtocolHandler* client)
 
     client->sendMessage(info);
 }
+

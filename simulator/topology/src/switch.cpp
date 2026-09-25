@@ -322,7 +322,7 @@ void Switch::configure(CfgReader &cfg, QDomNode secNode, traj_list_t &traj_list)
     {
         if (trajectories[SW_FWD_MINUS] == nullptr)
         {
-            Journal::instance()->error("Switch " + name + " hasn't outcoming trajectories!!!");
+            Journal::instance()->warning("Switch " + name + " hasn't outcoming trajectories!!!");
             state_fwd = NO_POSSIBLE_DIRECTION;
             ref_state_fwd = NO_POSSIBLE_DIRECTION;
         }

@@ -1,4 +1,4 @@
-#include    <compressor.h>
+﻿#include    <compressor.h>
 
 #include    <fstream>
 #include    <iostream>
@@ -37,10 +37,10 @@ bool compress_to_ktx2(const fs::path& src_img,
         }
     }
 
-    // Загрузка оригинальной текстуры
+    // Р—Р°РіСЂСѓР·РєР° РѕСЂРёРіРёРЅР°Р»СЊРЅРѕР№ С‚РµРєСЃС‚СѓСЂС‹
     int w = 0, h = 0, ch = 0;
 
-    // Всегда берем 4 канала, если нет альфы, то создается альфа равная 255
+    // Р’СЃРµРіРґР° Р±РµСЂРµРј 4 РєР°РЅР°Р»Р°, РµСЃР»Рё РЅРµС‚ Р°Р»СЊС„С‹, С‚Рѕ СЃРѕР·РґР°РµС‚СЃСЏ Р°Р»СЊС„Р° СЂР°РІРЅР°СЏ 255
     stbi_uc* data = stbi_load(src_img.string().c_str(), &w, &h, &ch, 4);
 
     if (!data)
@@ -49,28 +49,28 @@ bool compress_to_ktx2(const fs::path& src_img,
         return false;
     }
 
-    // Вычисление количества мип-уровней
+    // Р’С‹С‡РёСЃР»РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° РјРёРї-СѓСЂРѕРІРЅРµР№
     auto calcMipLevels = [](uint32_t w, uint32_t h) -> uint32_t {
         return static_cast<uint32_t>(floor(log2(std::max(w, h))) + 1);
     };
 
-    // Заполняем структуру, несущую информацию о будущей текстре
+    // Р—Р°РїРѕР»РЅСЏРµРј СЃС‚СЂСѓРєС‚СѓСЂСѓ, РЅРµСЃСѓС‰СѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ Р±СѓРґСѓС‰РµР№ С‚РµРєСЃС‚СЂРµ
     ktxTextureCreateInfo ci = {};
-    ci.vkFormat        = cfg.vkFormat; // формат входных данных
-    ci.baseWidth       = static_cast<ktx_uint32_t>(w); // базовая ширина
-    ci.baseHeight      = static_cast<ktx_uint32_t>(h); // базовая выоста
-    ci.baseDepth       = 1; // базовая глубина
-    ci.numDimensions   = 2; // базовая размерность (2D)
+    ci.vkFormat        = cfg.vkFormat; // С„РѕСЂРјР°С‚ РІС…РѕРґРЅС‹С… РґР°РЅРЅС‹С…
+    ci.baseWidth       = static_cast<ktx_uint32_t>(w); // Р±Р°Р·РѕРІР°СЏ С€РёСЂРёРЅР°
+    ci.baseHeight      = static_cast<ktx_uint32_t>(h); // Р±Р°Р·РѕРІР°СЏ РІС‹РѕСЃС‚Р°
+    ci.baseDepth       = 1; // Р±Р°Р·РѕРІР°СЏ РіР»СѓР±РёРЅР°
+    ci.numDimensions   = 2; // Р±Р°Р·РѕРІР°СЏ СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ (2D)
     ci.numLayers       = 1;
     ci.numFaces        = 1;
     ci.isArray         = KTX_FALSE;
 
-    // Число mipmap-уровней определяем ЯВНО, так как сами их сгенерируем
+    // Р§РёСЃР»Рѕ mipmap-СѓСЂРѕРІРЅРµР№ РѕРїСЂРµРґРµР»СЏРµРј РЇР’РќРћ, С‚Р°Рє РєР°Рє СЃР°РјРё РёС… СЃРіРµРЅРµСЂРёСЂСѓРµРј
     ci.numLevels       = generate_mipmaps ? calcMipLevels(w, h) : 1;
-    // Не полагаемся на аппратную генерацию - это для несжатых текстур
+    // РќРµ РїРѕР»Р°РіР°РµРјСЃСЏ РЅР° Р°РїРїСЂР°С‚РЅСѓСЋ РіРµРЅРµСЂР°С†РёСЋ - СЌС‚Рѕ РґР»СЏ РЅРµСЃР¶Р°С‚С‹С… С‚РµРєСЃС‚СѓСЂ
     ci.generateMipmaps = KTX_FALSE;
 
-    // Создаем текстуру
+    // РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂСѓ
     ktxTexture2* texture = nullptr;
     KTX_error_code result = ktxTexture2_Create(&ci,
                                                KTX_TEXTURE_CREATE_ALLOC_STORAGE,
@@ -82,16 +82,16 @@ bool compress_to_ktx2(const fs::path& src_img,
         return false;
     }
 
-    // Загружаем базовый уровень (0)
+    // Р—Р°РіСЂСѓР¶Р°РµРј Р±Р°Р·РѕРІС‹Р№ СѓСЂРѕРІРµРЅСЊ (0)
     auto* baseTex = ktxTexture(texture);
     ktxTexture_SetImageFromMemory(baseTex, 0, 0, 0, data, w * h * 4);
 
-    // Массив под указатели на данные всех уровней, не удаляем эти данные до сжатия
-    // и сохранения текстуры на диск!
+    // РњР°СЃСЃРёРІ РїРѕРґ СѓРєР°Р·Р°С‚РµР»Рё РЅР° РґР°РЅРЅС‹Рµ РІСЃРµС… СѓСЂРѕРІРЅРµР№, РЅРµ СѓРґР°Р»СЏРµРј СЌС‚Рё РґР°РЅРЅС‹Рµ РґРѕ СЃР¶Р°С‚РёСЏ
+    // Рё СЃРѕС…СЂР°РЅРµРЅРёСЏ С‚РµРєСЃС‚СѓСЂС‹ РЅР° РґРёСЃРє!
     std::vector<stbi_uc *> levels_data;
 
-    // Если нужны мипы — генерируем их вручную, последовательно уменашая
-    // рзмеры текструы в два раза на каждом уровне
+    // Р•СЃР»Рё РЅСѓР¶РЅС‹ РјРёРїС‹ вЂ” РіРµРЅРµСЂРёСЂСѓРµРј РёС… РІСЂСѓС‡РЅСѓСЋ, РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ СѓРјРµРЅР°С€Р°СЏ
+    // СЂР·РјРµСЂС‹ С‚РµРєСЃС‚СЂСѓС‹ РІ РґРІР° СЂР°Р·Р° РЅР° РєР°Р¶РґРѕРј СѓСЂРѕРІРЅРµ
     if (generate_mipmaps && ci.numLevels > 1)
     {
         stbi_uc* prevLevelData = data;
@@ -106,13 +106,13 @@ bool compress_to_ktx2(const fs::path& src_img,
 
             stbi_uc* resized = new stbi_uc[curW * curH * 4];
 
-            // Ресемплинг
+            // Р РµСЃРµРјРїР»РёРЅРі
             stbir_resize_uint8(
                 prevLevelData, prevW, prevH, 0,
                 resized, curW, curH, 0, 4
                 );
 
-            // Загружаем уровень в ktxTexture
+            // Р—Р°РіСЂСѓР¶Р°РµРј СѓСЂРѕРІРµРЅСЊ РІ ktxTexture
             ktxTexture_SetImageFromMemory(
                 baseTex, level, 0, 0,
                 resized, curW * curH * 4
@@ -124,40 +124,39 @@ bool compress_to_ktx2(const fs::path& src_img,
         }
     }
 
-    // Подготовка данных для сжатия
+    // РџРѕРґРіРѕС‚РѕРІРєР° РґР°РЅРЅС‹С… РґР»СЏ СЃР¶Р°С‚РёСЏ
     ktxBasisParams params = {};
     params.structSize = sizeof(ktxBasisParams);
 
-    // КРИТИЧНО: Обязательно устанавливаем уровень сжатия ETC1S
-    // Ваше значение 1 - допустимо, но используйте константу для ясности
-    params.etc1sCompressionLevel = 2; // KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL = 2
+    // РљР РРўРР§РќРћ: РћР±СЏР·Р°С‚РµР»СЊРЅРѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј СѓСЂРѕРІРµРЅСЊ СЃР¶Р°С‚РёСЏ ETC1S
+    // Р’Р°С€Рµ Р·РЅР°С‡РµРЅРёРµ 1 - РґРѕРїСѓСЃС‚РёРјРѕ, РЅРѕ РёСЃРїРѕР»СЊР·СѓР№С‚Рµ РєРѕРЅСЃС‚Р°РЅС‚Сѓ РґР»СЏ СЏСЃРЅРѕСЃС‚Рё
+    params.compressionLevel = 2; // KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL = 2
 
     // --encode basis-lz
-    params.codec = KTX_BASIS_CODEC_ETC1S;
 
-    // --qlevel (по умолчанию 128)
+    // --qlevel (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 128)
     params.qualityLevel = cfg.qualityLevel;
 
-    // Потоки - ЯВНО указываем количество наших ядер
+    // РџРѕС‚РѕРєРё - РЇР’РќРћ СѓРєР°Р·С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РЅР°С€РёС… СЏРґРµСЂ
     unsigned int numThreads = std::thread::hardware_concurrency();
     params.threadCount = (numThreads == 0) ? 1 : numThreads;
 
-    // RDO-пороги - важны для normal maps!
+    // RDO-РїРѕСЂРѕРіРё - РІР°Р¶РЅС‹ РґР»СЏ normal maps!
     if (cfg.isNormalMap)
     {
-        // Для normal map ДОЛЖНЫ быть отключены RDO оптимизации
-        // Согласно документации: "Tunes codec parameters for better quality on normal maps
+        // Р”Р»СЏ normal map Р”РћР›Р–РќР« Р±С‹С‚СЊ РѕС‚РєР»СЋС‡РµРЅС‹ RDO РѕРїС‚РёРјРёР·Р°С†РёРё
+        // РЎРѕРіР»Р°СЃРЅРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё: "Tunes codec parameters for better quality on normal maps
         // (no selector RDO, no endpoint RDO)"
         params.normalMap = KTX_TRUE;
-        params.noEndpointRDO = KTX_TRUE;  // Отключаем endpoint RDO
-        params.noSelectorRDO = KTX_TRUE;  // Отключаем selector RDO
+        params.noEndpointRDO = KTX_TRUE;  // РћС‚РєР»СЋС‡Р°РµРј endpoint RDO
+        params.noSelectorRDO = KTX_TRUE;  // РћС‚РєР»СЋС‡Р°РµРј selector RDO
 
-        // Для normal maps не используем preSwizzle - он для метаданных KTXswizzle
-        // В вашем случае нет такой метаинформации
+        // Р”Р»СЏ normal maps РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј preSwizzle - РѕРЅ РґР»СЏ РјРµС‚Р°РґР°РЅРЅС‹С… KTXswizzle
+        // Р’ РІР°С€РµРј СЃР»СѓС‡Р°Рµ РЅРµС‚ С‚Р°РєРѕР№ РјРµС‚Р°РёРЅС„РѕСЂРјР°С†РёРё
         params.preSwizzle = KTX_FALSE;
 
-        // Также не используем inputSwizzle, если не нужно менять порядок каналов
-        params.inputSwizzle[0] = 'r'; // Если нужно переставить каналы
+        // РўР°РєР¶Рµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµРј inputSwizzle, РµСЃР»Рё РЅРµ РЅСѓР¶РЅРѕ РјРµРЅСЏС‚СЊ РїРѕСЂСЏРґРѕРє РєР°РЅР°Р»РѕРІ
+        params.inputSwizzle[0] = 'r'; // Р•СЃР»Рё РЅСѓР¶РЅРѕ РїРµСЂРµСЃС‚Р°РІРёС‚СЊ РєР°РЅР°Р»С‹
         params.inputSwizzle[1] = 'g';
         params.inputSwizzle[2] = 'b';
         params.inputSwizzle[3] = 'a';
@@ -189,16 +188,16 @@ bool compress_to_ktx2(const fs::path& src_img,
         return false;
     }
 
-    // Уничтожаем текстуру в памяти
+    // РЈРЅРёС‡С‚РѕР¶Р°РµРј С‚РµРєСЃС‚СѓСЂСѓ РІ РїР°РјСЏС‚Рё
     ktxTexture_Destroy(ktxTexture(texture));
 
-    // Освобождаем память всех мипмап-уровней
+    // РћСЃРІРѕР±РѕР¶РґР°РµРј РїР°РјСЏС‚СЊ РІСЃРµС… РјРёРїРјР°Рї-СѓСЂРѕРІРЅРµР№
     for (auto d : levels_data)
     {
         stbi_image_free(d);
     }
 
-    // Уходим довольные, как слон, проделанной работой
+    // РЈС…РѕРґРёРј РґРѕРІРѕР»СЊРЅС‹Рµ, РєР°Рє СЃР»РѕРЅ, РїСЂРѕРґРµР»Р°РЅРЅРѕР№ СЂР°Р±РѕС‚РѕР№
     return true;
 }
 
@@ -222,7 +221,7 @@ std::map<int, TextureSettings> parse_gltf_textures(const json &gltf)
 
         auto& settings = image_settings[img_idx];
 
-        // Приоритет: Normal > BaseColor > остальные. Не перезаписываем, если роль уже определена.
+        // РџСЂРёРѕСЂРёС‚РµС‚: Normal > BaseColor > РѕСЃС‚Р°Р»СЊРЅС‹Рµ. РќРµ РїРµСЂРµР·Р°РїРёСЃС‹РІР°РµРј, РµСЃР»Рё СЂРѕР»СЊ СѓР¶Рµ РѕРїСЂРµРґРµР»РµРЅР°.
         if (settings.role == PBRTextureRole::UNKNOWN || role == PBRTextureRole::NORMAL)
         {
             settings.role = role;
@@ -264,7 +263,7 @@ std::map<int, TextureSettings> parse_gltf_textures(const json &gltf)
 //------------------------------------------------------------------------------
 int compress_model_textures(const command_line_t &cmd_line)
 {
-    // Открываем модель по указанному пути
+    // РћС‚РєСЂС‹РІР°РµРј РјРѕРґРµР»СЊ РїРѕ СѓРєР°Р·Р°РЅРЅРѕРјСѓ РїСѓС‚Рё
     if (!cmd_line.model_path.is_present)
     {
         std::cerr << "[ERR] missing path to GLTF-file" << std::endl;
@@ -273,7 +272,7 @@ int compress_model_textures(const command_line_t &cmd_line)
 
     fs::path gltf_path = cmd_line.model_path.value;
 
-    // Вытаемся открыть поток ввода
+    // Р’С‹С‚Р°РµРјСЃСЏ РѕС‚РєСЂС‹С‚СЊ РїРѕС‚РѕРє РІРІРѕРґР°
     std::ifstream ifs(gltf_path);
 
     if (!ifs.is_open())
@@ -282,7 +281,7 @@ int compress_model_textures(const command_line_t &cmd_line)
         return -1;
     }
 
-    // Пытаемся распарсить модель
+    // РџС‹С‚Р°РµРјСЃСЏ СЂР°СЃРїР°СЂСЃРёС‚СЊ РјРѕРґРµР»СЊ
     json gltf;
 
     try
@@ -302,7 +301,7 @@ int compress_model_textures(const command_line_t &cmd_line)
 
     auto img_settings = parse_gltf_textures(gltf);
 
-    // Формируем список пропускаемых текструр
+    // Р¤РѕСЂРјРёСЂСѓРµРј СЃРїРёСЃРѕРє РїСЂРѕРїСѓСЃРєР°РµРјС‹С… С‚РµРєСЃС‚СЂСѓСЂ
     auto skiped_textures = split_by_comma_view(cmd_line.skip_textures.value);
 
     if (gltf.contains("images") && gltf["images"].is_array())
@@ -325,7 +324,7 @@ int compress_model_textures(const command_line_t &cmd_line)
                 continue;
             }
 
-            // Проверяем, не надо ли пропустить эту текстуру
+            // РџСЂРѕРІРµСЂСЏРµРј, РЅРµ РЅР°РґРѕ Р»Рё РїСЂРѕРїСѓСЃС‚РёС‚СЊ СЌС‚Сѓ С‚РµРєСЃС‚СѓСЂСѓ
             bool is_skip_texture = false;
 
             for (auto skip_tex : skiped_textures)
@@ -337,7 +336,7 @@ int compress_model_textures(const command_line_t &cmd_line)
                 }
             }
 
-            // Пропускаем текстуру из списка
+            // РџСЂРѕРїСѓСЃРєР°РµРј С‚РµРєСЃС‚СѓСЂСѓ РёР· СЃРїРёСЃРєР°
             if (is_skip_texture)
             {
                 std::cout << "[INF] Skip texture " << src_path << std::endl;
@@ -365,7 +364,7 @@ int compress_model_textures(const command_line_t &cmd_line)
                     img.erase("bufferView");
                 }
 
-                // Удаляем исходную текстуру, если это требуется
+                // РЈРґР°Р»СЏРµРј РёСЃС…РѕРґРЅСѓСЋ С‚РµРєСЃС‚СѓСЂСѓ, РµСЃР»Рё СЌС‚Рѕ С‚СЂРµР±СѓРµС‚СЃСЏ
                 if (cmd_line.delete_src)
                 {
                     fs::remove(src_path);
@@ -400,3 +399,4 @@ int compress_model_textures(const command_line_t &cmd_line)
 
     return failed > 0 ? -1 : 0;
 }
+

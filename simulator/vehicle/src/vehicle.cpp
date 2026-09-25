@@ -1052,7 +1052,7 @@ void Vehicle::loadConfiguration(QString cfg_path)
         }
         else
         {
-            Journal::instance()->error("File " + cabCfgPath + " not found");
+            Journal::instance()->warning("File " + cabCfgPath + " not found");
         }
 
         control_inputs.push_back(inputs);

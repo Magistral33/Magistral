@@ -3,6 +3,7 @@
 #include "RouteViewer.h"
 
 #include <vsg/core/Exception.h>
+#include <vsgXchange/all.h>
 
 #include <QApplication>
 
@@ -31,6 +32,8 @@ int main(int argc, char* argv[])
     try
     {
         setup_crash_handler("../logs/viewer-crash.log");
+
+        vsgXchange::init();
 
         initialize_logger();
         print_command_line_arguments(argc, argv);
