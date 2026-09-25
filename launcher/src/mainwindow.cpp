@@ -161,8 +161,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
     ui->tbScenarioDescription->setFocusPolicy(Qt::NoFocus);
 
-    // Предстартовая диагностика GPU
-    gpuDiagnostics();
+        // Предстартовая диагностика GPU — временно отключена для отладки
+    // gpuDiagnostics();
 
     connect(ui->actionGraphics_settings, &QAction::triggered, this, [this](){
         graphSettingsWindow->show();
@@ -734,6 +734,7 @@ void MainWindow::createToolsMenu()
 
         if (toolName.isEmpty())
         {
+            secNode = cfg.getNextSection();
             continue;
         }
 
@@ -743,6 +744,7 @@ void MainWindow::createToolsMenu()
 
         if (!toolFile.exists())
         {
+            secNode = cfg.getNextSection();
             continue;
         }
 
