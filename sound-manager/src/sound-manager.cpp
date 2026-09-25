@@ -320,6 +320,7 @@ void SoundManager::setSoundSignal(size_t idx, float signal)
 //------------------------------------------------------------------------------
 void SoundManager::setSoundState(size_t idx, sound_state_t ss)
 {
+    if (_is_paused) return;
     //log_->notify(QString("State for sound [%1]: play %2 | volume %3 | pitch %4").arg(idx).arg(static_cast<int>(ss.state)).arg(ss.volume, 5, 'f', 3).arg(ss.pitch, 5, 'f', 3).toStdString());
     if (idx >= sounds.size())
     {
@@ -375,6 +376,7 @@ void SoundManager::setSoundState(size_t idx, sound_state_t ss)
 //------------------------------------------------------------------------------
 void SoundManager::play(size_t idx)
 {
+    if (_is_paused) return;
     if (idx >= sounds.size())
     {
         return;
@@ -386,12 +388,12 @@ void SoundManager::play(size_t idx)
         sounds[idx].prev_state = 1;
     }
 }
-
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 void SoundManager::stop(size_t idx)
 {
+    if (_is_paused) return;
     if (idx >= sounds.size())
     {
         return;
@@ -409,6 +411,7 @@ void SoundManager::stop(size_t idx)
 //------------------------------------------------------------------------------
 void SoundManager::setVolume(size_t idx, float volume)
 {
+    if (_is_paused) return;
     if (idx >= sounds.size())
     {
         return;
@@ -447,6 +450,7 @@ void SoundManager::setVolume(size_t idx, float volume)
 //------------------------------------------------------------------------------
 void SoundManager::setPitch(size_t idx, float pitch)
 {
+    if (_is_paused) return;
     if (idx >= sounds.size())
     {
         return;
@@ -468,5 +472,47 @@ void SoundManager::setPitch(size_t idx, float pitch)
     {
         sounds[idx].sound->play();
         sounds[idx].prev_state = 1;
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void SoundManager::pauseAll()
+{
+    if (_is_paused)
+    {
+        return;
+    }
+    _is_paused = true;
+
+    for (auto& s : sounds)
+    {
+        if (s.sound && s.sound->isPlaying())
+        {
+            s.sound->pause();
+            s.was_paused_by_us = true;
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void SoundManager::resumeAll()
+{
+    if (!_is_paused)
+    {
+        return;
+    }
+    _is_paused = false;
+
+    for (auto& s : sounds)
+    {
+        if (s.sound && s.was_paused_by_us)
+        {
+            s.sound->play();
+            s.was_paused_by_us = false;
+        }
     }
 }

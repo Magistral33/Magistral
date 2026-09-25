@@ -12,7 +12,8 @@ struct sound_config_t
 {
     ASound*  sound = nullptr;       ///< OpenAL-источник звука
     char     prev_state = 0;        ///< Состояние счётчика включений звука на предыдущем шаге
-    size_t   signal_id = 0;         ///< Индекс сигнала состояния звука
+    bool     was_paused_by_us = false; ///< Был запаузен при потере фокуса окна
+    size_t   signal_id = 0;        ///< Индекс сигнала состояния звука
     float    local_pos_x = 0.0f;    ///< Локальная координата звука по оси X
     float    local_pos_y = 0.0f;    ///< Локальная координата звука по оси Y
     float    local_pos_z = 0.0f;    ///< Локальная координата звука по оси Z

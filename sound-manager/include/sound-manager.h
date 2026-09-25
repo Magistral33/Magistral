@@ -51,6 +51,9 @@ private:
     /// Уже загруженные звуки
     std::map<std::string, ASound*> loaded_sounds;
 
+    /// Признак паузы всех звуков (потеря фокуса окна)
+    bool _is_paused = false;
+
     /// Инициализация
     void init();
 
@@ -93,6 +96,15 @@ public slots:
 
     /// Задать скорость воспроизведения источнику звука #idx
     void setPitch(size_t idx, float pitch);
+
+    /// Пауза всех звуков (при потере фокуса окна)
+    void pauseAll();
+
+    /// Возобновление всех звуков, которые были запаузены нами
+    void resumeAll();
+
+    /// Признак, что звук сейчас на паузе
+    bool isPaused() const { return _is_paused; }
 };
 
 #endif // SOUND_MANAGER_H

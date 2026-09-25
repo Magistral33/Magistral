@@ -908,6 +908,7 @@ void RouteViewer::initViewer()
         traffic_lights_handler.get(),
         train_labels_handler.get(),
         vehicles_handler.get(),
+        sound_manager.get(),
         settings
     );
 

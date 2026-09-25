@@ -2,6 +2,8 @@
 
 #include "UpdateControlToServerHandler.h"
 
+#include "sound-manager.h"
+
 #include "CameraCabineManipulator.h"
 #include "CameraFollowManipulator.h"
 #include "CameraFreeManipulator.h"
@@ -29,6 +31,7 @@ UpdateViewerHandler::UpdateViewerHandler(
     TrafficLightsHandler* sig_handler,
     TrainLabelsHandler* train_labels_handler,
     VehiclesHandler* veh_handler,
+    SoundManager* sound_manager,
     settings_t& settings
 )
     : Inherit()
@@ -41,6 +44,7 @@ UpdateViewerHandler::UpdateViewerHandler(
     , _sig_handler(sig_handler)
     , _train_labels_handler(train_labels_handler)
     , _vehicles_handler(veh_handler)
+    , _sound_manager(sound_manager)
 {
     _free_manipulator = new CameraFreeManipulator(_keyboard, _camera, _settings);
     _vehicle_manipulator = new CameraVehicleManipulator(_keyboard, _camera, _settings);
@@ -330,6 +334,16 @@ void UpdateViewerHandler::apply(vsg::FocusInEvent& focusIn)
     {
         focusIn.accept(*_keyboard);
     }
+
+    if (_upd_server_control)
+    {
+        _upd_server_control->apply(focusIn);
+    }
+
+    if (_sound_manager)
+    {
+        _sound_manager->resumeAll();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -340,6 +354,16 @@ void UpdateViewerHandler::apply(vsg::FocusOutEvent& focusOut)
     if (_keyboard)
     {
         focusOut.accept(*_keyboard);
+    }
+
+    if (_upd_server_control)
+    {
+        _upd_server_control->apply(focusOut);
+    }
+
+    if (_sound_manager)
+    {
+        _sound_manager->pauseAll();
     }
 }
 

@@ -17,6 +17,7 @@ class ScreenshotWriter;
 struct settings_t;
 class TrafficLightsHandler;
 class TrainLabelsHandler;
+class SoundManager;
 class UpdateControlToServerHandler;
 class VehiclesHandler;
 
@@ -55,6 +56,7 @@ public:
         TrafficLightsHandler* sig_handler,
         TrainLabelsHandler* train_labels_handler,
         VehiclesHandler* veh_handler,
+        SoundManager* sound_manager,
         settings_t& settings
     );
 
@@ -122,6 +124,7 @@ private:
     TrafficLightsHandler* _sig_handler = nullptr;
     TrainLabelsHandler* _train_labels_handler = nullptr;
     VehiclesHandler* _vehicles_handler = nullptr;
+    SoundManager* _sound_manager = nullptr;
 
     bool _wasPausePhysicallyPressed = false;
     void setPause();
