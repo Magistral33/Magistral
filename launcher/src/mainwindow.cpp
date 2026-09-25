@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 //      RSS launcher main window
 //      (c) maisvendoo, 17/12/2018
@@ -161,14 +161,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
     ui->tbScenarioDescription->setFocusPolicy(Qt::NoFocus);
 
-        // Предстартовая диагностика GPU — временно отключена для отладки
-    // gpuDiagnostics();
+        // РџСЂРµРґСЃС‚Р°СЂС‚РѕРІР°СЏ РґРёР°РіРЅРѕСЃС‚РёРєР° GPU вЂ” РІСЂРµРјРµРЅРЅРѕ РѕС‚РєР»СЋС‡РµРЅР° РґР»СЏ РѕС‚Р»Р°РґРєРё
+    gpuDiagnostics();
 
     connect(ui->actionGraphics_settings, &QAction::triggered, this, [this](){
         graphSettingsWindow->show();
     });
 
-    // Окно скрывается, а не удаляется
+    // РћРєРЅРѕ СЃРєСЂС‹РІР°РµС‚СЃСЏ, Р° РЅРµ СѓРґР°Р»СЏРµС‚СЃСЏ
     helpWindow->setAttribute(Qt::WA_DeleteOnClose, false);
 
     createToolsMenu();
@@ -408,12 +408,12 @@ void MainWindow::loadScenarios(route_info_t &route_info)
         return;
     }
 
-    // Перебираем все подкаталоги в папке scenarios данного маршрута
+    // РџРµСЂРµР±РёСЂР°РµРј РІСЃРµ РїРѕРґРєР°С‚Р°Р»РѕРіРё РІ РїР°РїРєРµ scenarios РґР°РЅРЅРѕРіРѕ РјР°СЂС€СЂСѓС‚Р°
     QDirIterator it(scenarios_path, QDir::Dirs | QDir::NoDotAndDotDot);
 
     while (it.hasNext())
     {
-        // Проверяем наличие в найденном подкаталоге файла main.lua
+        // РџСЂРѕРІРµСЂСЏРµРј РЅР°Р»РёС‡РёРµ РІ РЅР°Р№РґРµРЅРЅРѕРј РїРѕРґРєР°С‚Р°Р»РѕРіРµ С„Р°Р№Р»Р° main.lua
         QString abs_path = it.next();
         QString main_path = QDir::toNativeSeparators(abs_path + QDir::separator() + "main.lua");
         QFile main_file(main_path);
@@ -422,17 +422,17 @@ void MainWindow::loadScenarios(route_info_t &route_info)
         {
             scenario_t scn;
 
-            // И только в случае наличия такового - добавляем каталог в список
-            // доступных сценариев
+            // Р С‚РѕР»СЊРєРѕ РІ СЃР»СѓС‡Р°Рµ РЅР°Р»РёС‡РёСЏ С‚Р°РєРѕРІРѕРіРѕ - РґРѕР±Р°РІР»СЏРµРј РєР°С‚Р°Р»РѕРі РІ СЃРїРёСЃРѕРє
+            // РґРѕСЃС‚СѓРїРЅС‹С… СЃС†РµРЅР°СЂРёРµРІ
             scn.scenario_name = scenarios_dir.relativeFilePath(abs_path);
 
-            // Пропускаем startup-сценарий, чтобы юзеру глаза не мозолил
+            // РџСЂРѕРїСѓСЃРєР°РµРј startup-СЃС†РµРЅР°СЂРёР№, С‡С‚РѕР±С‹ СЋР·РµСЂСѓ РіР»Р°Р·Р° РЅРµ РјРѕР·РѕР»РёР»
             if (scn.scenario_name == STARTUP_SCN_SUBDIR)
             {
                 continue;
             }
 
-            // Читаем описание сценария из README.md
+            // Р§РёС‚Р°РµРј РѕРїРёСЃР°РЅРёРµ СЃС†РµРЅР°СЂРёСЏ РёР· README.md
             QString desc_path = QDir::toNativeSeparators(abs_path + QDir::separator() + "README.md");
             scn.scenario_description = loadScenarioDescription(desc_path);
 
@@ -564,7 +564,7 @@ QString getCenteredHtml(QString msg, QString color = "#ff6b6b")
 //------------------------------------------------------------------------------
 void MainWindow::gpuDiagnostics()
 {
-    // Получаем список GPU
+    // РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє GPU
     auto status = getInfoGPUs(gpus_info);
 
     start_viewer_allowed = false;
@@ -608,11 +608,11 @@ void MainWindow::gpuDiagnostics()
                 break;
             }
 
-            // последний рубеж - проверка версии ОС. На тот случай, когда устройство
-            // надежно детектируется как Vulkan-совместимое, но на заведомо совместимом обрудовании
-            // не запускает и падает вьювер, а драйверы не хотят устанавливаться
-            // жалуясь на версию ОС.
-            // TODO: протестировать это!!! иначе огребем от юзеров по полной!
+            // РїРѕСЃР»РµРґРЅРёР№ СЂСѓР±РµР¶ - РїСЂРѕРІРµСЂРєР° РІРµСЂСЃРёРё РћРЎ. РќР° С‚РѕС‚ СЃР»СѓС‡Р°Р№, РєРѕРіРґР° СѓСЃС‚СЂРѕР№СЃС‚РІРѕ
+            // РЅР°РґРµР¶РЅРѕ РґРµС‚РµРєС‚РёСЂСѓРµС‚СЃСЏ РєР°Рє Vulkan-СЃРѕРІРјРµСЃС‚РёРјРѕРµ, РЅРѕ РЅР° Р·Р°РІРµРґРѕРјРѕ СЃРѕРІРјРµСЃС‚РёРјРѕРј РѕР±СЂСѓРґРѕРІР°РЅРёРё
+            // РЅРµ Р·Р°РїСѓСЃРєР°РµС‚ Рё РїР°РґР°РµС‚ РІСЊСЋРІРµСЂ, Р° РґСЂР°Р№РІРµСЂС‹ РЅРµ С…РѕС‚СЏС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°С‚СЊСЃСЏ
+            // Р¶Р°Р»СѓСЏСЃСЊ РЅР° РІРµСЂСЃРёСЋ РћРЎ.
+            // TODO: РїСЂРѕС‚РµСЃС‚РёСЂРѕРІР°С‚СЊ СЌС‚Рѕ!!! РёРЅР°С‡Рµ РѕРіСЂРµР±РµРј РѕС‚ СЋР·РµСЂРѕРІ РїРѕ РїРѕР»РЅРѕР№!
             size_t valid_gpus_count = 0;            
             std::vector<size_t> devices_with_problems;
 
@@ -696,12 +696,12 @@ void MainWindow::createHelpMenu()
             }
 
             helpWindow->setCentralWidget(viewer);
-            helpWindow->setWindowTitle(QString("%2 | %1 страниц").arg(viewer->pageCount()).arg(fileInfo.baseName()));
+            helpWindow->setWindowTitle(QString("%2 | %1 СЃС‚СЂР°РЅРёС†").arg(viewer->pageCount()).arg(fileInfo.baseName()));
             helpWindow->show();
             helpWindow->resize(900, 1000);
 
             QTimer::singleShot(0, viewer, [this, viewer]() {
-                viewer->adjustWindowToPageWidth(0); // 0 = первая страница
+                viewer->adjustWindowToPageWidth(0); // 0 = РїРµСЂРІР°СЏ СЃС‚СЂР°РЅРёС†Р°
                 this->centerWindow(helpWindow);
             });
         });
@@ -848,7 +848,7 @@ void MainWindow::applyOptions(FieldsDataList &fd_options, Ui::MainWindow *ui)
 //------------------------------------------------------------------------------
 void MainWindow::loadActiveTrainsList()
 {
-    // TODO: Разные типы с size_t
+    // TODO: Р Р°Р·РЅС‹Рµ С‚РёРїС‹ СЃ size_t
     if ((selected_route_idx < 0) || (selected_route_idx >= routes_info.size()))
     {
         return;
@@ -1095,7 +1095,7 @@ void MainWindow::slotRouteSelection()
     if (selected_route_idx == route_idx)
         return;
 
-    // Очистка выбранных активных поездов
+    // РћС‡РёСЃС‚РєР° РІС‹Р±СЂР°РЅРЅС‹С… Р°РєС‚РёРІРЅС‹С… РїРѕРµР·РґРѕРІ
     clearActiveTrainsList();
     ui->ptRouteDescription->clear();
 
@@ -1112,7 +1112,7 @@ void MainWindow::slotRouteSelection()
     fwd_train_positions = &routes_info[route_idx].fwd_train_positions;
     bwd_train_positions = &routes_info[route_idx].bwd_train_positions;
 
-    // Загрузка предыдущих выбранных активных поездов
+    // Р—Р°РіСЂСѓР·РєР° РїСЂРµРґС‹РґСѓС‰РёС… РІС‹Р±СЂР°РЅРЅС‹С… Р°РєС‚РёРІРЅС‹С… РїРѕРµР·РґРѕРІ
     selected_route_idx = route_idx;
     loadActiveTrainsList();
 
@@ -1211,7 +1211,7 @@ void MainWindow::slotTrainConfigChanged()
         tbActiveTrains->setItemText(idx, tww->getTrainName());
 
         int train_idx = tww->cbTrainConfigSelect->currentIndex() - 1;
-        // TODO: Разные типы с size_t
+        // TODO: Р Р°Р·РЅС‹Рµ С‚РёРїС‹ СЃ size_t
         if ((train_idx >= 0) && (train_idx < trains_info.size()))
         {
             ui->lwTrains->setCurrentRow(train_idx, QItemSelectionModel::ClearAndSelect);
@@ -1625,7 +1625,7 @@ void MainWindow::slotSaveTrainsConfigAsScenario()
 
     createScenario(selectedRouteDirName, scnCode, ui->leScnName->text());
 
-    // TODO: Разные типы с size_t
+    // TODO: Р Р°Р·РЅС‹Рµ С‚РёРїС‹ СЃ size_t
     if (selected_route_idx < 0 || selected_route_idx >= routes_info.size())
     {
         return;
@@ -1809,16 +1809,16 @@ bool MainWindow::terminateProcess(QProcess *proc) const
         return false;
     }
 
-    // Посылаем процессу SIGTERM
+    // РџРѕСЃС‹Р»Р°РµРј РїСЂРѕС†РµСЃСЃСѓ SIGTERM
     proc->terminate();
 
-    // Если он не завершился
+    // Р•СЃР»Рё РѕРЅ РЅРµ Р·Р°РІРµСЂС€РёР»СЃСЏ
     if (!proc->waitForFinished(PROC_WAIT_TIMEOUT))
     {
-        // Посылаем SIGKILL
+        // РџРѕСЃС‹Р»Р°РµРј SIGKILL
         proc->kill();
 
-        // Ждем завершения
+        // Р–РґРµРј Р·Р°РІРµСЂС€РµРЅРёСЏ
         return proc->waitForFinished(PROC_WAIT_TIMEOUT);
     }
 

@@ -73,6 +73,10 @@ const char* deviceTypeToStr(VkPhysicalDeviceType t)
 //------------------------------------------------------------------------------
 StateGPU getInfoGPUs(std::vector<gpu_info_t> &gpus_info)
 {
+    // Отключаем сторонние Vulkan-слои (OBS Studio hook и т.п.), которые
+    // могут ломать vkEnumeratePhysicalDevices и определение GPU
+    qputenv("VK_LOADER_LAYERS_DISABLE", "VK_LAYER_OBS_HOOK");
+
     VkResult result = volkInitialize();
 
     if (result != VK_SUCCESS)
