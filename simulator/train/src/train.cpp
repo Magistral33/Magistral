@@ -1,4 +1,4 @@
-﻿#include    "train.h"
+#include    "train.h"
 
 #include    "filesystem.h"
 #include    "CfgReader.h"
@@ -955,7 +955,6 @@ bool Train::loadTrain(QString cfg_path, const init_data_t& init_data, int model_
         while (!vehicle_node.isNull())
         {
             Journal::instance()->info("==== Vehicle's group loading ====");
-            Journal::instance()->info("DEBUG: nodeName=" + vehicle_node.nodeName() + ", hasModuleConfig=" + (vehicle_node.firstChildElement("ModuleConfig").isNull() ? "FALSE" : "TRUE"));
 
             QString module_lib_name = "";
             if (!cfg.getString(vehicle_node, "Module", module_lib_name))
@@ -980,7 +979,6 @@ bool Train::loadTrain(QString cfg_path, const init_data_t& init_data, int model_
                 Journal::instance()->error("Section with Config file name is not found");
                 break;
             }
-            Journal::instance()->info("DEBUG: module_cfg_name=" + module_cfg_name);
 
             QString module_cfg_dir = module_cfg_name;
             if (!cfg.getString(vehicle_node, "ModuleConfigDir", module_cfg_dir))
