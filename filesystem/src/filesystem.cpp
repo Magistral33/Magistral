@@ -1,4 +1,5 @@
 #include "filesystem.h"
+#include <QCoreApplication>
 
 //------------------------------------------------------------------------------
 //
@@ -14,7 +15,7 @@ FileSystem& FileSystem::getInstance()
 //------------------------------------------------------------------------------
 FileSystem::FileSystem()
 {
-    const std::string workDir = QDir::currentPath().toStdString();
+    const std::string workDir = QCoreApplication::applicationDirPath().toStdString();
     const std::string tmp = getLevelUpDirectory(workDir, 1);
 
     setDir(binDir, workDir);
