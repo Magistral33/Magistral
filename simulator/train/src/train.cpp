@@ -1,4 +1,4 @@
-#include    "train.h"
+﻿#include    "train.h"
 
 #include    "filesystem.h"
 #include    "CfgReader.h"
@@ -147,10 +147,10 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
     if (other_train == nullptr)
         return;
 
-    // ПЕ поезда, с которым сцепляемся
+    // РџР• РїРѕРµР·РґР°, СЃ РєРѕС‚РѕСЂС‹Рј СЃС†РµРїР»СЏРµРјСЃСЏ
     std::vector<Vehicle*> other_vehicles = *(other_train->getVehicles());
 
-    // Вектор состояния поезда, с которым сцепляемся
+    // Р’РµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРѕРµР·РґР°, СЃ РєРѕС‚РѕСЂС‹Рј СЃС†РµРїР»СЏРµРјСЃСЏ
     state_vector_t other_y = other_train->getStateVector();
     double other_begin = other_y[0];
     std::vector<double> other_veh_distances;
@@ -162,7 +162,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
         other_begin = other_coord;
     }
 
-    // Массив межвагонных связей поезда, с которым сцепляемся
+    // РњР°СЃСЃРёРІ РјРµР¶РІР°РіРѕРЅРЅС‹С… СЃРІСЏР·РµР№ РїРѕРµР·РґР°, СЃ РєРѕС‚РѕСЂС‹Рј СЃС†РµРїР»СЏРµРјСЃСЏ
     std::vector<std::vector<Joint*>> other_joints_list = other_train->getJoints();
 
     Vehicle* veh;
@@ -208,7 +208,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
         return joints;
     };
 
-    // Соединяем ПЕ в общий массив
+    // РЎРѕРµРґРёРЅСЏРµРј РџР• РІ РѕР±С‰РёР№ РјР°СЃСЃРёРІ
     if (is_coupling_to_head)
     {
         veh = *(vehicles.begin());
@@ -230,7 +230,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 other_veh->setNextVehicle(veh) :
                 other_veh->setPrevVehicle(veh);
 
-            // Добавляем ПЕ и их вектор состояния в обратном порядке
+            // Р”РѕР±Р°РІР»СЏРµРј РџР• Рё РёС… РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ
             for (size_t i = other_vehicles.size(); i > 0; --i)
             {
                 Vehicle* vehicle = other_vehicles[i - 1];
@@ -247,7 +247,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 new_vehicles.push_back(vehicle);
             }
 
-            // Новые поездные координаты для прицепленных ПЕ
+            // РќРѕРІС‹Рµ РїРѕРµР·РґРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РґР»СЏ РїСЂРёС†РµРїР»РµРЅРЅС‹С… РџР•
             double train_coord = y[0];
             double distance = current_distance + veh->getLength() / 2.0 + other_veh->getLength() / 2.0;
             other_veh_distances.insert(other_veh_distances.begin(), distance);
@@ -257,19 +257,19 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 size_t model_idx = vehicle->getModelIndex();
                 size_t idx = vehicle->getStateIndex();
 
-                // На всякий случай актуализируем положение ПЕ в топологии
-                // по старой дуговой координате
+                // РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№ Р°РєС‚СѓР°Р»РёР·РёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ РџР• РІ С‚РѕРїРѕР»РѕРіРёРё
+                // РїРѕ СЃС‚Р°СЂРѕР№ РґСѓРіРѕРІРѕР№ РєРѕРѕСЂРґРёРЅР°С‚Рµ
                 auto& vc = topology->getVehicleController(model_idx);
                 vc.setPathCoord(vehicle->getDirection() * new_y[idx]);
 
                 vehicle->setDirection(-vehicle->getDirection());
 
-                // Новая дуговая координата
+                // РќРѕРІР°СЏ РґСѓРіРѕРІР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р°
                 new_y[idx] = train_coord + other_veh_distances[i];
                 vc.setInitPathCoord(vehicle->getDirection() * new_y[idx]);
                 train_coord = new_y[idx];
 
-                // Новый индекс поезда
+                // РќРѕРІС‹Р№ РёРЅРґРµРєСЃ РїРѕРµР·РґР°
                 vc.setTrainIndex(train_idx);
                 vehicle->setTrainIndex(train_idx);
             }
@@ -298,12 +298,12 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 other_veh->setPrevVehicle(veh) :
                 other_veh->setNextVehicle(veh);
 
-            // Добавляем ПЕ и их вектор состояния
+            // Р”РѕР±Р°РІР»СЏРµРј РџР• Рё РёС… РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ
             new_vehicles = other_vehicles;
             new_y = other_y;
             new_ode_order = other_y.size();
 
-            // Новые поездные координаты для прицепленных ПЕ
+            // РќРѕРІС‹Рµ РїРѕРµР·РґРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РґР»СЏ РїСЂРёС†РµРїР»РµРЅРЅС‹С… РџР•
             double train_coord = y[0];
             double distance = current_distance + veh->getLength() / 2.0 + other_veh->getLength() / 2.0;
             other_veh_distances.push_back(distance);
@@ -313,17 +313,17 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 size_t model_idx = vehicle->getModelIndex();
                 size_t idx = vehicle->getStateIndex();
 
-                // На всякий случай актуализируем положение ПЕ в топологии
-                // по старой дуговой координате
+                // РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№ Р°РєС‚СѓР°Р»РёР·РёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ РџР• РІ С‚РѕРїРѕР»РѕРіРёРё
+                // РїРѕ СЃС‚Р°СЂРѕР№ РґСѓРіРѕРІРѕР№ РєРѕРѕСЂРґРёРЅР°С‚Рµ
                 auto& vc = topology->getVehicleController(model_idx);
                 vc.setPathCoord(vehicle->getDirection() * new_y[idx]);
 
-                // Новая дуговая координата
+                // РќРѕРІР°СЏ РґСѓРіРѕРІР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р°
                 new_y[idx] = train_coord + other_veh_distances[i - 1];
                 vc.setInitPathCoord(vehicle->getDirection() * new_y[idx]);
                 train_coord = new_y[idx];
 
-                // Новый индекс поезда
+                // РќРѕРІС‹Р№ РёРЅРґРµРєСЃ РїРѕРµР·РґР°
                 vc.setTrainIndex(train_idx);
                 vehicle->setTrainIndex(train_idx);
             }
@@ -331,10 +331,10 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
             new_joints_list = other_joints_list;
         }
 
-        // Создаём новый массив межвагонных связей между крайними ПЕ сцепляемых поездов
+        // РЎРѕР·РґР°С‘Рј РЅРѕРІС‹Р№ РјР°СЃСЃРёРІ РјРµР¶РІР°РіРѕРЅРЅС‹С… СЃРІСЏР·РµР№ РјРµР¶РґСѓ РєСЂР°Р№РЅРёРјРё РџР• СЃС†РµРїР»СЏРµРјС‹С… РїРѕРµР·РґРѕРІ
         new_joints_list.push_back(create_joints(this, other_veh, other_cons, veh, cons));
 
-        // Задаём для ПЕ данного поезда новые индексы в векторе состояния
+        // Р—Р°РґР°С‘Рј РґР»СЏ РџР• РґР°РЅРЅРѕРіРѕ РїРѕРµР·РґР° РЅРѕРІС‹Рµ РёРЅРґРµРєСЃС‹ РІ РІРµРєС‚РѕСЂРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
         for (size_t i = 0; i < vehicles.size(); ++i)
         {
             Vehicle* vehicle = vehicles[i];
@@ -368,11 +368,11 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 other_veh->setNextVehicle(veh) :
                 other_veh->setPrevVehicle(veh);
 
-            // Добавляем ПЕ и их вектор состояния
+            // Р”РѕР±Р°РІР»СЏРµРј РџР• Рё РёС… РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ
             new_vehicles = other_vehicles;
             new_y = other_y;
 
-            // Новые поездные координаты для прицепленных ПЕ
+            // РќРѕРІС‹Рµ РїРѕРµР·РґРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РґР»СЏ РїСЂРёС†РµРїР»РµРЅРЅС‹С… РџР•
             double train_coord = y[veh->getStateIndex()];
             double distance = current_distance + veh->getLength() / 2.0 + other_veh->getLength() / 2.0;
             other_veh_distances.insert(other_veh_distances.begin(), distance);
@@ -383,17 +383,17 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 size_t idx = vehicle->getStateIndex();
                 vehicle->setStateIndex(idx + y.size());
 
-                // На всякий случай актуализируем положение ПЕ в топологии
-                // по старой дуговой координате
+                // РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№ Р°РєС‚СѓР°Р»РёР·РёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ РџР• РІ С‚РѕРїРѕР»РѕРіРёРё
+                // РїРѕ СЃС‚Р°СЂРѕР№ РґСѓРіРѕРІРѕР№ РєРѕРѕСЂРґРёРЅР°С‚Рµ
                 auto& vc = topology->getVehicleController(model_idx);
                 vc.setPathCoord(vehicle->getDirection() * new_y[idx]);
 
-                // Новая дуговая координата
+                // РќРѕРІР°СЏ РґСѓРіРѕРІР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р°
                 new_y[idx] = train_coord - other_veh_distances[i];
                 vc.setInitPathCoord(vehicle->getDirection() * new_y[idx]);
                 train_coord = new_y[idx];
 
-                // Новый индекс поезда
+                // РќРѕРІС‹Р№ РёРЅРґРµРєСЃ РїРѕРµР·РґР°
                 vc.setTrainIndex(train_idx);
                 vehicle->setTrainIndex(train_idx);
             }
@@ -414,7 +414,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 other_veh->setPrevVehicle(veh) :
                 other_veh->setNextVehicle(veh);
 
-            // Новые поездные координаты для прицепленных ПЕ
+            // РќРѕРІС‹Рµ РїРѕРµР·РґРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РґР»СЏ РїСЂРёС†РµРїР»РµРЅРЅС‹С… РџР•
             double train_coord = y[veh->getStateIndex()];
             double distance = current_distance + veh->getLength() / 2.0 + other_veh->getLength() / 2.0;
             other_veh_distances.push_back(distance);
@@ -425,21 +425,21 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 size_t idx = vehicle->getStateIndex();
                 size_t s = vehicle->getDegressOfFreedom();
 
-                // Добавляем ПЕ и их вектор состояния в обратном порядке
+                // Р”РѕР±Р°РІР»СЏРµРј РџР• Рё РёС… РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ РѕР±СЂР°С‚РЅРѕРј РїРѕСЂСЏРґРєРµ
                 for (size_t j = idx; j < idx + 2 * s; ++j)
                 {
                     new_y.push_back(other_y[j]);
                 }
                 new_vehicles.push_back(vehicle);
 
-                // На всякий случай актуализируем положение ПЕ в топологии
-                // по старой дуговой координате
+                // РќР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№ Р°РєС‚СѓР°Р»РёР·РёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ РџР• РІ С‚РѕРїРѕР»РѕРіРёРё
+                // РїРѕ СЃС‚Р°СЂРѕР№ РґСѓРіРѕРІРѕР№ РєРѕРѕСЂРґРёРЅР°С‚Рµ
                 auto& vc = topology->getVehicleController(model_idx);
                 vc.setPathCoord(vehicle->getDirection() * other_y[idx]);
 
                 vehicle->setDirection(-vehicle->getDirection());
 
-                // Новая дуговая координата
+                // РќРѕРІР°СЏ РґСѓРіРѕРІР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р°
                 new_y[new_ode_order] = train_coord - other_veh_distances[i - 1];
                 vc.setInitPathCoord(vehicle->getDirection() * new_y[new_ode_order]);
                 train_coord = new_y[new_ode_order];
@@ -447,7 +447,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
                 vehicle->setStateIndex(new_ode_order + y.size());
                 new_ode_order += 2 * s;
 
-                // Новый индекс поезда
+                // РќРѕРІС‹Р№ РёРЅРґРµРєСЃ РїРѕРµР·РґР°
                 vc.setTrainIndex(train_idx);
                 vehicle->setTrainIndex(train_idx);
             }
@@ -463,7 +463,7 @@ void Train::couple(double current_distance, bool is_coupling_to_head, bool is_ot
             }
         }
 
-        // Создаём новый массив межвагонных связей между крайними ПЕ сцепляемых поездов
+        // РЎРѕР·РґР°С‘Рј РЅРѕРІС‹Р№ РјР°СЃСЃРёРІ РјРµР¶РІР°РіРѕРЅРЅС‹С… СЃРІСЏР·РµР№ РјРµР¶РґСѓ РєСЂР°Р№РЅРёРјРё РџР• СЃС†РµРїР»СЏРµРјС‹С… РїРѕРµР·РґРѕРІ
         joints_list.push_back(create_joints(this, veh, cons, other_veh, other_cons));
 
         vehicles.insert(vehicles.end(), new_vehicles.begin(), new_vehicles.end());
@@ -561,7 +561,7 @@ Train* Train::uncouple(double uncoupling_distance)
         }
         joints_list.resize(i - 1);
 
-        // ОТЛАДКА
+        // РћРўР›РђР”РљРђ
         Journal::instance()->info(QString("Trains uncoupled! Train #%1: new size of vehicles %2, joints %3, state_vector %4")
                                       .arg(train_idx, 3)
                                       .arg(vehicles.size(), 4)
@@ -580,7 +580,7 @@ Train* Train::uncouple(double uncoupling_distance)
 //------------------------------------------------------------------------------
 void Train::reverse()
 {
-    // Поезд из единственной ПЕ - примитивный разворот ориентации и движения
+    // РџРѕРµР·Рґ РёР· РµРґРёРЅСЃС‚РІРµРЅРЅРѕР№ РџР• - РїСЂРёРјРёС‚РёРІРЅС‹Р№ СЂР°Р·РІРѕСЂРѕС‚ РѕСЂРёРµРЅС‚Р°С†РёРё Рё РґРІРёР¶РµРЅРёСЏ
     if (vehicles.size() == 1)
     {
         size_t s = vehicles[0]->getDegressOfFreedom();
@@ -590,25 +590,25 @@ void Train::reverse()
         return;
     }
 
-    // Заготовка под разворот вектора состояния
+    // Р—Р°РіРѕС‚РѕРІРєР° РїРѕРґ СЂР°Р·РІРѕСЂРѕС‚ РІРµРєС‚РѕСЂР° СЃРѕСЃС‚РѕСЏРЅРёСЏ
     state_vector_t new_y;
     new_y.reserve(y.size());
 
-    // Проходим по ПЕ, от хвоста к голове
+    // РџСЂРѕС…РѕРґРёРј РїРѕ РџР•, РѕС‚ С…РІРѕСЃС‚Р° Рє РіРѕР»РѕРІРµ
     for (size_t i = vehicles.size(); i > 0; --i)
     {
-        // Текущий индекс и количество величин (степеней свободы) в векторе состояния
+        // РўРµРєСѓС‰РёР№ РёРЅРґРµРєСЃ Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµР»РёС‡РёРЅ (СЃС‚РµРїРµРЅРµР№ СЃРІРѕР±РѕРґС‹) РІ РІРµРєС‚РѕСЂРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ
         Vehicle* vehicle = vehicles[i - 1];
         size_t idx = vehicle->getStateIndex();
         size_t s = vehicle->getDegressOfFreedom();
 
-        // Разворачиваем ориентацию
+        // Р Р°Р·РІРѕСЂР°С‡РёРІР°РµРј РѕСЂРёРµРЅС‚Р°С†РёСЋ
         vehicle->setDirection(-vehicle->getDirection());
-        // Новый индекс в векторе состояния после разворота
+        // РќРѕРІС‹Р№ РёРЅРґРµРєСЃ РІ РІРµРєС‚РѕСЂРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРѕСЃР»Рµ СЂР°Р·РІРѕСЂРѕС‚Р°
         vehicle->setStateIndex(new_y.size());
 
-        // Добавляем величины этой ПЕ в новый вектор состояния
-        // Координату и скорость берём с противоположным знаком
+        // Р”РѕР±Р°РІР»СЏРµРј РІРµР»РёС‡РёРЅС‹ СЌС‚РѕР№ РџР• РІ РЅРѕРІС‹Р№ РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+        // РљРѕРѕСЂРґРёРЅР°С‚Сѓ Рё СЃРєРѕСЂРѕСЃС‚СЊ Р±РµСЂС‘Рј СЃ РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅС‹Рј Р·РЅР°РєРѕРј
         new_y.push_back(-y[idx]);
         for (size_t j = idx + 1; j < idx + s; ++j)
         {
@@ -620,7 +620,7 @@ void Train::reverse()
             new_y.push_back(y[j]);
         }
     }
-    // Разворачиваем межвагонные связи
+    // Р Р°Р·РІРѕСЂР°С‡РёРІР°РµРј РјРµР¶РІР°РіРѕРЅРЅС‹Рµ СЃРІСЏР·Рё
     for (size_t i = joints_list.size(); i > 0; --i)
     {
         for (auto joint : joints_list[i - 1])
@@ -629,9 +629,9 @@ void Train::reverse()
         }
     }
 
-    // Присваиваем новый вектор состояния
+    // РџСЂРёСЃРІР°РёРІР°РµРј РЅРѕРІС‹Р№ РІРµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ
     y.swap(new_y);
-    // Разворачиваем порядок хранения указателей на ПЕ и межвагонные связи
+    // Р Р°Р·РІРѕСЂР°С‡РёРІР°РµРј РїРѕСЂСЏРґРѕРє С…СЂР°РЅРµРЅРёСЏ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РџР• Рё РјРµР¶РІР°РіРѕРЅРЅС‹Рµ СЃРІСЏР·Рё
     std::reverse(vehicles.begin(), vehicles.end());
     std::reverse(joints_list.begin(), joints_list.end());
 }
@@ -745,8 +745,8 @@ double Train::getVelocity() const
 {
     if (vehicles.size() == 2)
     {
-        // Если поезд из двух ПЕ, принимаем за скорость поезда более медленную,
-        // так как более быстрая вероятно сейчас отцепляется
+        // Р•СЃР»Рё РїРѕРµР·Рґ РёР· РґРІСѓС… РџР•, РїСЂРёРЅРёРјР°РµРј Р·Р° СЃРєРѕСЂРѕСЃС‚СЊ РїРѕРµР·РґР° Р±РѕР»РµРµ РјРµРґР»РµРЅРЅСѓСЋ,
+        // С‚Р°Рє РєР°Рє Р±РѕР»РµРµ Р±С‹СЃС‚СЂР°СЏ РІРµСЂРѕСЏС‚РЅРѕ СЃРµР№С‡Р°СЃ РѕС‚С†РµРїР»СЏРµС‚СЃСЏ
         const double v0 = getVelocity(0);
         const double v1 = getVelocity(1);
         if (abs(v0) < abs(v1))
@@ -756,7 +756,7 @@ double Train::getVelocity() const
         return v1;
     }
 
-    // Принимаем за скорость поезда скорость ПЕ в середине
+    // РџСЂРёРЅРёРјР°РµРј Р·Р° СЃРєРѕСЂРѕСЃС‚СЊ РїРѕРµР·РґР° СЃРєРѕСЂРѕСЃС‚СЊ РџР• РІ СЃРµСЂРµРґРёРЅРµ
     return getVelocity(vehicles.size() / 2);
 }
 
@@ -955,6 +955,7 @@ bool Train::loadTrain(QString cfg_path, const init_data_t& init_data, int model_
         while (!vehicle_node.isNull())
         {
             Journal::instance()->info("==== Vehicle's group loading ====");
+            Journal::instance()->info("DEBUG: nodeName=" + vehicle_node.nodeName() + ", hasModuleConfig=" + (vehicle_node.firstChildElement("ModuleConfig").isNull() ? "FALSE" : "TRUE"));
 
             QString module_lib_name = "";
             if (!cfg.getString(vehicle_node, "Module", module_lib_name))
@@ -979,6 +980,7 @@ bool Train::loadTrain(QString cfg_path, const init_data_t& init_data, int model_
                 Journal::instance()->error("Section with Config file name is not found");
                 break;
             }
+            Journal::instance()->info("DEBUG: module_cfg_name=" + module_cfg_name);
 
             QString module_cfg_dir = module_cfg_name;
             if (!cfg.getString(vehicle_node, "ModuleConfigDir", module_cfg_dir))
@@ -1361,56 +1363,56 @@ void Train::initVehiclesBrakes()
 //------------------------------------------------------------------------------
 double Train::calcStopForce(double distance, double veh_velocity, double veh_mass, double dt)
 {
-    // Если отъехали далеко от тупика - не вмешиваемся
+    // Р•СЃР»Рё РѕС‚СЉРµС…Р°Р»Рё РґР°Р»РµРєРѕ РѕС‚ С‚СѓРїРёРєР° - РЅРµ РІРјРµС€РёРІР°РµРјСЃСЏ
     if (distance > DISTANCE_TO_COUPLE_TRAINS)
     {
         return 0.0;
     }
 
-    // Приближение к тупиковому упору
+    // РџСЂРёР±Р»РёР¶РµРЅРёРµ Рє С‚СѓРїРёРєРѕРІРѕРјСѓ СѓРїРѕСЂСѓ
     if (distance >= 0.0)
     {
-        // Для торможения к тупику условно зададим ограничение скорости,
-        // пропорциональное расстоянию до тупика
+        // Р”Р»СЏ С‚РѕСЂРјРѕР¶РµРЅРёСЏ Рє С‚СѓРїРёРєСѓ СѓСЃР»РѕРІРЅРѕ Р·Р°РґР°РґРёРј РѕРіСЂР°РЅРёС‡РµРЅРёРµ СЃРєРѕСЂРѕСЃС‚Рё,
+        // РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёСЋ РґРѕ С‚СѓРїРёРєР°
         const double over_velocity = veh_velocity - distance;
 
-        // В движение с меньшей скоростью, в т.ч. обратно от тупика, не вмешиваемся
+        // Р’ РґРІРёР¶РµРЅРёРµ СЃ РјРµРЅСЊС€РµР№ СЃРєРѕСЂРѕСЃС‚СЊСЋ, РІ С‚.С‡. РѕР±СЂР°С‚РЅРѕ РѕС‚ С‚СѓРїРёРєР°, РЅРµ РІРјРµС€РёРІР°РµРјСЃСЏ
         if (over_velocity < Physics::ZERO)
         {
             return 0.0;
         }
 
-        // Отталкивание от тупика до некоторой маленькой скорости
+        // РћС‚С‚Р°Р»РєРёРІР°РЅРёРµ РѕС‚ С‚СѓРїРёРєР° РґРѕ РЅРµРєРѕС‚РѕСЂРѕР№ РјР°Р»РµРЅСЊРєРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
         const double revert_velocity = 0.25;
 
-        // Рассчитываем силу, необходимую для снижения скорости ПЕ до ограничения
+        // Р Р°СЃСЃС‡РёС‚С‹РІР°РµРј СЃРёР»Сѓ, РЅРµРѕР±С…РѕРґРёРјСѓСЋ РґР»СЏ СЃРЅРёР¶РµРЅРёСЏ СЃРєРѕСЂРѕСЃС‚Рё РџР• РґРѕ РѕРіСЂР°РЅРёС‡РµРЅРёСЏ
         const double force = veh_mass * (revert_velocity + over_velocity) / dt;
 
-        // Коэффициент из расстояния от точки начала торможения перед тупиковым упором
-        // для плавного возрастания тормозного услилия по мере приближения к тупику
+        // РљРѕСЌС„С„РёС†РёРµРЅС‚ РёР· СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РѕС‚ С‚РѕС‡РєРё РЅР°С‡Р°Р»Р° С‚РѕСЂРјРѕР¶РµРЅРёСЏ РїРµСЂРµРґ С‚СѓРїРёРєРѕРІС‹Рј СѓРїРѕСЂРѕРј
+        // РґР»СЏ РїР»Р°РІРЅРѕРіРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЏ С‚РѕСЂРјРѕР·РЅРѕРіРѕ СѓСЃР»РёР»РёСЏ РїРѕ РјРµСЂРµ РїСЂРёР±Р»РёР¶РµРЅРёСЏ Рє С‚СѓРїРёРєСѓ
         const double k = 1.0 - distance / DISTANCE_TO_COUPLE_TRAINS;
 
-        // Для мягкости торможения применяем меньшее усилие
+        // Р”Р»СЏ РјСЏРіРєРѕСЃС‚Рё С‚РѕСЂРјРѕР¶РµРЅРёСЏ РїСЂРёРјРµРЅСЏРµРј РјРµРЅСЊС€РµРµ СѓСЃРёР»РёРµ
         return k * force * 0.25;
     }
 
-    // После проезда тупика стремимся вытолкнуть состав обратно с небольшой скоростью
+    // РџРѕСЃР»Рµ РїСЂРѕРµР·РґР° С‚СѓРїРёРєР° СЃС‚СЂРµРјРёРјСЃСЏ РІС‹С‚РѕР»РєРЅСѓС‚СЊ СЃРѕСЃС‚Р°РІ РѕР±СЂР°С‚РЅРѕ СЃ РЅРµР±РѕР»СЊС€РѕР№ СЃРєРѕСЂРѕСЃС‚СЊСЋ
     const double diff_velocity = veh_velocity - tanh(distance * 0.25) * 4.0;
 
-    // Отталкивание от тупика до некоторой маленькой скорости
+    // РћС‚С‚Р°Р»РєРёРІР°РЅРёРµ РѕС‚ С‚СѓРїРёРєР° РґРѕ РЅРµРєРѕС‚РѕСЂРѕР№ РјР°Р»РµРЅСЊРєРѕР№ СЃРєРѕСЂРѕСЃС‚Рё
     const double revert_velocity = 0.25;
 
-    // Рассчитываем силу, необходимую для изменения скорости ПЕ
-    // до скорости выталкивания из тупика
+    // Р Р°СЃСЃС‡РёС‚С‹РІР°РµРј СЃРёР»Сѓ, РЅРµРѕР±С…РѕРґРёРјСѓСЋ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ СЃРєРѕСЂРѕСЃС‚Рё РџР•
+    // РґРѕ СЃРєРѕСЂРѕСЃС‚Рё РІС‹С‚Р°Р»РєРёРІР°РЅРёСЏ РёР· С‚СѓРїРёРєР°
     const double force = veh_mass * (revert_velocity + diff_velocity) / dt;
 
-    // Для поглощения энергии слишком быстрому выталкиванию из тупика
-    // сопротивляемся полным усилием
+    // Р”Р»СЏ РїРѕРіР»РѕС‰РµРЅРёСЏ СЌРЅРµСЂРіРёРё СЃР»РёС€РєРѕРј Р±С‹СЃС‚СЂРѕРјСѓ РІС‹С‚Р°Р»РєРёРІР°РЅРёСЋ РёР· С‚СѓРїРёРєР°
+    // СЃРѕРїСЂРѕС‚РёРІР»СЏРµРјСЃСЏ РїРѕР»РЅС‹Рј СѓСЃРёР»РёРµРј
     if (diff_velocity < revert_velocity)
     {
         return force;
     }
 
-    // Для мягкости торможения применяем меньшее усилие
+    // Р”Р»СЏ РјСЏРіРєРѕСЃС‚Рё С‚РѕСЂРјРѕР¶РµРЅРёСЏ РїСЂРёРјРµРЅСЏРµРј РјРµРЅСЊС€РµРµ СѓСЃРёР»РёРµ
     return force * 0.25;
 }

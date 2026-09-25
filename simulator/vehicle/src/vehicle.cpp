@@ -1,4 +1,4 @@
-//------------------------------------------------------------------------------
+﻿//------------------------------------------------------------------------------
 //
 //      Vehicle base class
 //      (c) maisvendoo, 03/09/2018
@@ -1028,6 +1028,14 @@ void Vehicle::loadConfiguration(QString cfg_path)
         CfgReader cabCfg;
 
         QMap<int, float> inputs;
+
+        // Пропускаем <Cabine> без указания конфига — это нормально
+        // для вагонов без кабины управления (пассажирские, грузовые)
+        if (cabine_cfg_name.isEmpty())
+        {
+            cabNode = cfg.getNextSection();
+            continue;
+        }
 
         QString cabCfgPath = cfg_dir + QDir::separator() + cabine_cfg_name + ".xml";
 
