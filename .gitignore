@@ -21,3 +21,8 @@ plugins/
 
 *.cache*
 *.vs*
+
+deploy/
+_junk/
+*.bak2
+server.pid
