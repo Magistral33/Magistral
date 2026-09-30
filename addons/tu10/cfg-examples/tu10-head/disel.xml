@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+    <Device>
+        <Order>3</Order>
+        <SubStepNum>1</SubStepNum>
+        <Solver>euler</Solver>
+
+        <!-- Параметры дизеля ТУ10 (черновые, от РА3) -->
+        <Mc>300.0</Mc>
+        <J>10.0</J>
+        <omega_min>20.0</omega_min>
+        <omega_max>210.0</omega_max>
+        <start_time>8.0</start_time>
+        <Qmax>0.125</Qmax>
+
+        <K0>0.125</K0>
+        <K1>3e-4</K1>
+        <K2>0.3</K2>
+        <K3>7.0e4</K3>
+        <K4>0.01</K4>
+    </Device>
+</Config>

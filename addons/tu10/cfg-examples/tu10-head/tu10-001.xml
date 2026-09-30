@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+    <Vehicle>
+        <!-- Черновые ТТХ ТУ10 (потом заменим на реальные) -->
+        <EmptyMass>18000</EmptyMass>
+        <PayloadMass>2000</PayloadMass>
+        <Length>8.7</Length>
+        <WheelDiameter>0.6</WheelDiameter>
+        <NumAxis>2</NumAxis>
+        <WheelInertia>30.0</WheelInertia>
+        <SoundDir>tu10</SoundDir>
+
+        <MainResist>loco-resist</MainResist>
+        <WheelRailFriction>loco-AC</WheelRailFriction>
+
+        <CustomModulesDir>tu10</CustomModulesDir>
+    </Vehicle>
+
+    <Cabine>
+        <DriverPos>0.0 0.0 2.2</DriverPos>
+        <DriverDir>0.0</DriverDir>
+    </Cabine>
+
+    <!-- Модель отключена на время smoke-теста -->
+    <!--
+    <Model>
+        <ModelName>tu10/tu10.gltf</ModelName>
+        <AnimationsConfigDir>tu10</AnimationsConfigDir>
+    </Model>
+    -->
+</Config>

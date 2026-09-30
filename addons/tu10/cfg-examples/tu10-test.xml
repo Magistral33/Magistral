@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Config>
+
+    <Common>
+        <ChargingPressure>0.5</ChargingPressure>
+        <InitMainResPressure>0.8</InitMainResPressure>
+        <NoAir>0</NoAir>
+        <Title>ТУ10-001 (тест)</Title>
+        <Description>Учебный тепловоз ТУ10 — тестовый состав для отладки</Description>
+    </Common>
+
+    <Vehicle>
+        <ModuleDir>tu10</ModuleDir>
+        <Module>tu10-head</Module>
+        <ModuleConfigDir>tu10-head</ModuleConfigDir>
+        <ModuleConfig>tu10-001</ModuleConfig>
+        <IsOrientationForward>1</IsOrientationForward>
+        <Count>1</Count>
+        <PayloadCoeff>0</PayloadCoeff>
+    </Vehicle>
+
+</Config>
