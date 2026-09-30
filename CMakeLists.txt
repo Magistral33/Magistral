@@ -39,6 +39,7 @@ add_subdirectory (simulator)
 add_subdirectory (addons/passcar)
 add_subdirectory (addons/freightcar)
 add_subdirectory (addons/vl60)
+add_subdirectory (addons/tu10)
 
 add_subdirectory (tools/server-daemon)
 
