@@ -118,6 +118,9 @@ protected:
     bool    prev_S          = false;
     bool    prev_T          = false;
     bool    prev_klub_K     = false;   // K - подтверждение бдительности
+    bool    prev_klub_J     = false;   // J - РМП (режим П/М)
+    bool    prev_klub_I     = false;   // I - ВК (переход с «К» на «Б»)
+    bool    prev_klub_U     = false;   // U - К20 (Vдоп 20 км/ч)
 
     // Путь к конфигу вагона: нужен, чтобы прочитать disel.xml после
     // создания дизеля (loadConfig вызывается раньше initialization).
@@ -136,26 +139,55 @@ protected:
     bool    prev_klub_keys[26] = {false};
     QString klub_input;                 // набранное на клавиатуре число
     double  klub_coord_offset = 0.0;    // поправка координаты, м
-    bool    klub_ind_p        = false;  // индикатор «П» (сигнал 188)
-    bool    klub_ind_m        = false;  // индикатор «М» (сигнал 187)
+    bool    klub_ind_p        = true;   // индикатор «П» (сигнал 188), поездной
+    bool    klub_ind_m        = false;  // индикатор «М» (сигнал 187), маневровый
     bool    klub_cassette     = false;  // кассета (189)
     bool    klub_zapret       = false;  // запрет отпуска (180), ручной
-    // Контроль скорости и проверка бдительности
-    double  klub_brake           = 0.0;     // автоторможение, 0..1 (доля 0,38 МПа)
-    bool    klub_auto_brake      = false;   // КЛУБ держит тормоз
-    bool    klub_autostop        = false;   // автостоп до подтверждения клавишей К
-    double  klub_vigilance_timer = 0.0;     // время движения до проверки, с
-    double  klub_vigilance_rest  = 0.0;     // остаток на подтверждение, с
-    bool    klub_vigilance_active = false;  // идёт проверка бдительности (186)
     bool    klub_side         = false;  // боковое направление (185)
     int     klub_limit_offset = 0;      // поправка следующего ограничения
     double  klub_flash_timer  = 0.0;    // проверка ламп, с
+
+    // Сигнал локомотивного светофора БИЛ: 0=К, 1=КЖ, 2=Ж, 3=З, 4=Б
+    int     klub_signal       = 4;
+    int     klub_prev_signal  = -1;     // для однократной проверки при смене
+    int     klub_prev_alsn    = -1;     // предыдущий сигнал АЛС (для «ВК»/«К20»)
+    bool    klub_k20          = false;  // кнопка «К20»: Vдоп 20 км/ч
+    bool    klub_vk           = false;  // кнопка «ВК»: с «К» на «Б»
+    double  klub_v_dop        = 50.0;   // Vдоп для индикации (191)
+    double  klub_v_tsel       = 50.0;   // Vцел для индикации (192)
+
+    // Контроль скорости: свисток ЭПК при превышении Vдоп на 1 км/ч
+    bool    klub_whistle      = false;
+    double  klub_whistle_rest = 0.0;    // остаток до экстренного, с
+
+    // Проверка бдительности (п. 5.4)
+    bool    klub_check_active = false;  // идёт проверка (сигнал 186)
+    bool    klub_check_single = false;  // однократная (без второго этапа)
+    bool    klub_check_horn   = false;  // второй этап: свисток ЭПК
+    double  klub_check_rest   = 0.0;    // остаток текущего этапа, с
+    double  klub_next_check   = 0.0;    // до следующей периодической, с
+    int     klub_band         = -1;     // группа интервалов (2: 30-40, 4: 60-90)
+    bool    klub_moving       = false;  // локомотив уже двигался
+
+    // Контроль трогания: 70 с от тяговой позиции до движения (п. 5.3.1)
+    double  klub_traction_timer = 0.0;
+
+    // Тормоз
+    double  klub_brake           = 0.0;     // автоторможение, 0..1 (доля 0,38 МПа)
+    bool    klub_auto_brake      = false;   // КЛУБ держит тормоз
+    bool    klub_autostop        = false;   // автостоп до подтверждения клавишей К
 
     /// Предел скорости по маршруту, но не выше конструкционной, км/ч
     double klubSpeedLimit() const;
 
     /// Контроль скорости и проверка бдительности
     void stepKlubSafety(double dt);
+    /// Начать проверку бдительности (однократную или периодическую)
+    void klubStartCheck(bool periodic);
+    /// Экстренное торможение через ЭПК (автостоп)
+    void klubEmergency(const QString &reason);
+    /// Случайный интервал периодических проверок для группы, с
+    static double klubRandomInterval(int band);
 
     /// Клавиатура КЛУБ-У: обработка нажатий (ID 150..175)
     void stepKlubKeys(double dt);

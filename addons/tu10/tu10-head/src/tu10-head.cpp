@@ -5,6 +5,7 @@
 #include    <Journal.h>
 
 #include    <QFileInfo>
+#include    <QRandomGenerator>
 
 #include    <core/get_module.h>
 
@@ -16,17 +17,19 @@
 // клавишей S или кнопкой «Пуск» без блокировок цепочки.
 static const bool kPanel4Installed = false;
 
-// --- КЛУБ-У: уставки контроля ---
-// Конструкционная скорость ТУ10 по инструкции - 50 км/ч: маршрутное
-// ограничение выше неё для тепловоза смысла не имеет.
+// --- КЛУБ-У: уставки по «Инструкции по эксплуатации КЛУБ-У» (МПС РФ, 2002) ---
+// Конструкционная скорость ТУ10: маршрутное ограничение выше не имеет смысла.
 static const double KLUB_MAX_SPEED_KMH = 50.0;
-// Превышение ограничения, при котором включается служебное торможение, км/ч.
-static const double KLUB_SERVICE_OVER = 2.0;
-// Превышение, при котором включается экстренное торможение, км/ч.
-static const double KLUB_EMERGENCY_OVER = 5.0;
-// Проверка бдительности: период при движении и время на ответ, с.
-static const double KLUB_VIGILANCE_INTERVAL = 60.0;
-static const double KLUB_VIGILANCE_TIMEOUT = 10.0;
+// Превышение Vдоп, при котором включается свисток ЭПК (п. 5.5.1.2), км/ч.
+static const double KLUB_WHISTLE_OVER = 1.0;
+// Время на подтверждение бдительности и на снижение скорости после
+// свистка: (6 ± 0,5) с (п. 5.4.2, 5.4.3, 5.5.1.2).
+static const double KLUB_CHECK_TIMEOUT = 6.0;
+// Время от установки контроллера в тяговую позицию до трогания (п. 5.3.1).
+static const double KLUB_START_TIMEOUT = 70.0;
+// Скорость по белому сигналу «Б» (п. 5.5.4.6) и в маневровом режиме (п. 5.7.1).
+static const double KLUB_VBEL_KMH = 40.0;
+static const double KLUB_MANEUVER_KMH = 60.0;
 
 //------------------------------------------------------------------------------
 Tu10Head::Tu10Head(QObject *parent) : Vehicle(parent)
@@ -371,20 +374,20 @@ void Tu10Head::stepCabControls(double dt)
 //------------------------------------------------------------------------------
 // Клавиатура КЛУБ-У (БИП-УТ): ID 150..175 из tu10-cabine1.xml.
 //
-// Назначение клавиш в этой модели:
+// Назначение клавиш по приложению 3 инструкции КЛУБ-У:
 //   0..9        - набор числа (до 4 цифр)
 //   + / -       - увеличить/уменьшить набранное число
-//   ВК          - ввод числа как поправки координаты, м
-//   ОС          - сброс поправки координаты
-//   >О<         - очистка набранного числа
-//   П           - индикатор «П» на табло
-//   К20         - индикатор «М» на табло
-//   И           - значок кассеты
-//   К           - проверка бдительности
-//   РМП         - «запрет отпуска»
-//   ОТМР        - направление «прямо/бок»
+//   П           - режим ввода номера пути
 //   Л           - проверка ламп (все ячейки на 2 с)
+//   К           - проверка бдительности (РБ)
+//   ВК          - выключение сигнала «К», переход на «Б»
+//   И           - значок кассеты
+//   РМП         - выбор режима «Поездной / Маневровый» (на стоянке)
 //   ПОВТЯР      - повтор: короткое мигание зелёных ячеек
+//   ОТМР        - направление «прямо/бок»
+//   ОС          - отмена действующего ограничения
+//   К20         - Vдоп 20 км/ч при сигналах «КЖ» и «К»
+//   >О<         - очистка набранного числа
 //   F           - самоконтроль индикации (все ячейки на 2 с)
 //   вверх/вниз  - поправка следующего ограничения +-5 км/ч
 //------------------------------------------------------------------------------
@@ -448,11 +451,8 @@ void Tu10Head::onKlubKey(int id)
         klub_input = QString::number(qMax(0, value - 1));
         break;
 
-    case 162:   // П (поездной режим)
-        klub_ind_p = !klub_ind_p;
-        if (klub_ind_p) klub_ind_m = false;     // режимы П и М взаимоисключающие
-        j->info(QString("Tu10Head KLUB: режим П = %1, М = %2")
-                .arg(klub_ind_p).arg(klub_ind_m));
+    case 162:   // П - режим ввода номера пути
+        j->info("Tu10Head KLUB: режим ввода номера пути");
         break;
 
     case 163:   // Л
@@ -460,11 +460,17 @@ void Tu10Head::onKlubKey(int id)
         j->info("Tu10Head KLUB: проверка ламп");
         break;
 
-    case 164:   // ВК
-        klub_coord_offset = static_cast<double>(value);
+    case 164:   // ВК - выключение сигнала «К» и переход на «Б»
+        if (klub_signal == 0 && !klub_ind_m)
+        {
+            klub_vk = true;
+            j->info("Tu10Head KLUB: сигнал «К» выключен, переход на «Б» (Vдоп 40)");
+        }
+        else
+        {
+            j->info("Tu10Head KLUB: «ВК» действует при сигнале «К»");
+        }
         klub_input.clear();
-        j->info(QString("Tu10Head KLUB: ввод координаты, поправка %1 м")
-                .arg(klub_coord_offset, 0, 'f', 0));
         break;
 
     case 165:   // И
@@ -475,20 +481,24 @@ void Tu10Head::onKlubKey(int id)
     case 166:   // К - проверка бдительности (РБ)
         if (klub_autostop)
         {
+            // Снятие автостопа: тормоз отпускается плавно в stepKlubSafety
             klub_autostop = false;
             klub_auto_brake = false;
-            klub_brake = 0.0;
-            klub_vigilance_active = false;
-            klub_vigilance_timer = 0.0;
-            klub_vigilance_rest = 0.0;
+            klub_check_active = false;
+            klub_check_horn = false;
+            klub_next_check = klubRandomInterval(klub_band);
             j->info("Tu10Head KLUB: автостоп снят");
         }
-        else if (klub_vigilance_active)
+        else if (klub_check_active)
         {
-            klub_vigilance_active = false;
-            klub_vigilance_timer = 0.0;
-            klub_vigilance_rest = 0.0;
-            j->info("Tu10Head KLUB: проверка бдительности подтверждена");
+            const bool single = klub_check_single;
+            klub_check_active = false;
+            klub_check_horn = false;
+            klub_check_rest = 0.0;
+            klub_next_check = klubRandomInterval(klub_band);
+            j->info(single
+                ? "Tu10Head KLUB: однократная проверка бдительности подтверждена"
+                : "Tu10Head KLUB: периодическая проверка бдительности подтверждена");
         }
         else
         {
@@ -496,9 +506,22 @@ void Tu10Head::onKlubKey(int id)
         }
         break;
 
-    case 167:   // РМП
-        klub_zapret = !klub_zapret;
-        j->info(QString("Tu10Head KLUB: запрет отпуска = %1").arg(klub_zapret));
+    case 167:   // РМП - режим «Поездной / Маневровый», только на стоянке
+        if (qAbs(velocity) * 3.6 > 1.0)
+        {
+            j->info("Tu10Head KLUB: режим движения меняется только на стоянке");
+            break;
+        }
+        klub_ind_m = !klub_ind_m;
+        klub_ind_p = !klub_ind_m;
+        klub_k20 = false;
+        klub_vk = false;
+        klub_prev_signal = -1;
+        klub_prev_alsn = -1;
+        klub_band = -1;
+        klub_next_check = 0.0;
+        j->info(QString("Tu10Head KLUB: режим %1")
+                .arg(klub_ind_m ? "маневровый (М)" : "поездной (П)"));
         break;
 
     case 168:   // ПОВТЯР
@@ -512,17 +535,24 @@ void Tu10Head::onKlubKey(int id)
                 .arg(klub_side ? "бок" : "прямо"));
         break;
 
-    case 170:   // ОС
+    case 170:   // ОС - отмена действующего ограничения
+        klub_k20 = false;
+        klub_limit_offset = 0;
         klub_coord_offset = 0.0;
         klub_input.clear();
-        j->info("Tu10Head KLUB: сброс поправки координаты");
+        j->info("Tu10Head KLUB: ограничение отменено");
         break;
 
-    case 171:   // К20 (маневровый режим «М»)
-        klub_ind_m = !klub_ind_m;
-        if (klub_ind_m) klub_ind_p = false;     // режимы П и М взаимоисключающие
-        j->info(QString("Tu10Head KLUB: режим М = %1, П = %2")
-                .arg(klub_ind_m).arg(klub_ind_p));
+    case 171:   // К20 - проезд светофора с запрещающим при «КЖ»/«К»
+        if (klub_signal == 0 || klub_signal == 1)
+        {
+            klub_k20 = true;
+            j->info("Tu10Head KLUB: «К20» - Vдоп 20 км/ч");
+        }
+        else
+        {
+            j->info("Tu10Head KLUB: «К20» действует при сигналах «КЖ» и «К»");
+        }
         break;
 
     case 172:   // >О<
@@ -569,97 +599,281 @@ double Tu10Head::klubSpeedLimit() const
 }
 
 //------------------------------------------------------------------------------
-// КЛУБ-У: контроль скорости и проверка бдительности.
+// «Старшинство» сигнала БИЛ: чем больше, тем более запрещающий.
+//------------------------------------------------------------------------------
+static int klubSignalRank(const int sig)
+{
+    switch (sig)
+    {
+    case 0: return 4;   // К
+    case 1: return 3;   // КЖ
+    case 2: return 2;   // Ж
+    case 3: return 1;   // З
+    default: return 0;  // Б
+    }
+}
+
+//------------------------------------------------------------------------------
+// Группа интервалов периодических проверок:
+//   2 - 30..40 с, 4 - 60..90 с, -1 - проверки не производятся.
+//------------------------------------------------------------------------------
+static int klubBandFor(const int sig, const bool maneuver,
+                       const double v_kmh, const double v_tsel)
+{
+    if (maneuver) return 4;                     // п. 5.7.3
+    switch (sig)
+    {
+    case 0:                                     // «К»
+    case 1: return 2;                           // «КЖ»
+    case 2: return (v_kmh > v_tsel) ? 2 : -1;   // «Ж» (п. 5.5.2.3)
+    case 4: return 4;                           // «Б» (п. 5.5.5.3)
+    default: return -1;                         // «З» — проверок нет
+    }
+}
+
+//------------------------------------------------------------------------------
+// КЛУБ-У: контроль скорости и проверка бдительности по инструкции.
 //
-// Контроль скорости: при превышении ограничения на 2 км/ч включается
-// служебное автоторможение, на 5 км/ч - экстренное. Когда скорость
-// возвращается в норму, автоторможение плавно снимается.
+// Сигналы БИЛ: «К», «КЖ», «Ж», «З», «Б»; для каждого свои Vдоп и Vцел
+// (табл. 3.3.4.2). При превышении Vдоп на 1 км/ч раздаётся свисток ЭПК,
+// и если за 6 ± 0,5 с скорость не снижена — экстренное торможение
+// (п. 5.5.1.2).
 //
-// Проверка бдительности: через каждые 60 с движения (скорость выше 3 км/ч)
-// загорается индикатор и даётся 10 с на подтверждение клавишей «К»
-// (или клавишей K на клавиатуре). Не подтвердил - автостоп: экстренное
-// торможение держится до подтверждения.
+// Проверки бдительности: однократные (смена сигнала на более запрещающий,
+// трогание при «К», «КЖ», «Б») и периодические. Интервалы: «Ж» (при
+// превышении Vцел), «КЖ», «К» — 30-40 с; «Б» и маневровый режим — 60-90 с;
+// при «З» проверки не производятся (п. 5.4, 5.5, 5.7). На РБ даётся
+// 6 ± 0,5 с, для периодической после этого — свисток ЭПК и ещё 6 с на РБС,
+// затем экстренное торможение.
+//
+// Трогание: если контроллер в тяговой позиции, а движения нет 70 с —
+// срыв ЭПК (п. 5.3.1).
 //------------------------------------------------------------------------------
 void Tu10Head::stepKlubSafety(const double dt)
 {
+    Journal *j = Journal::instance();
     const double v_kmh = qAbs(velocity) * 3.6;
-    const double v_limit = klubSpeedLimit();
 
-    // --- Контроль скорости ---
-    if (klub_autostop)
+    // --- 1. Сигнал локомотивного светофора и режим движения ---
+    int alsn = 4;                                   // «Б» (белый)
+    if (!klub_ind_m && alsn_coil && alsn_coil->getFrequency() > 0.0)
     {
-        // Автостоп держит экстренное торможение до подтверждения клавишей «К»
-        klub_brake = 1.0;
-        klub_auto_brake = true;
+        alsn = static_cast<int>(alsn_coil->getCode());  // 0=К,1=КЖ,2=Ж,3=З
+        if (alsn < 0 || alsn > 3) alsn = 0;
     }
-    else if (v_kmh > v_limit + KLUB_EMERGENCY_OVER)
+
+    // Ручные разрешения («ВК», «К20») действуют до смены сигнала АЛС.
+    if (klub_prev_alsn >= 0 && alsn != klub_prev_alsn)
     {
-        if (klub_brake < 1.0)
+        klub_vk = false;
+        if (alsn == 2 || alsn == 3) klub_k20 = false;
+    }
+    klub_prev_alsn = alsn;
+
+    int sig = alsn;                                 // «ВК»: с «К» на «Б»
+    if (!klub_ind_m && klub_vk && alsn == 0) sig = 4;
+    klub_signal = sig;
+
+    // --- 2. Допустимая и целевая скорости (табл. 3.3.4.2) ---
+    const double v_route = klubSpeedLimit();
+    double v_dop = v_route;
+    double v_tsel = v_route;
+
+    if (klub_ind_m)
+    {
+        v_dop = v_tsel = KLUB_MANEUVER_KMH;         // п. 5.7.1
+    }
+    else
+    {
+        switch (sig)
         {
-            Journal::instance()->info(
-                QString("Tu10Head KLUB: превышение %1 км/ч при %2 - экстренное торможение")
-                    .arg(v_kmh - v_limit, 0, 'f', 1)
-                    .arg(v_limit, 0, 'f', 0));
+        case 0:                                     // «К»
+            v_tsel = 0.0;
+            v_dop = 20.0;
+            break;
+
+        case 1:                                     // «КЖ»: Vцел 20, Vдоп от Vжел
+            v_tsel = 20.0;
+            {
+                double dist = 0.0;
+                if (speedmap) dist = speedmap->getNextLimitDistance();
+                if (dist <= 0.0 && alsn_coil) dist = alsn_coil->getNextSignalDistance();
+                if (dist > 0.0)
+                {
+                    const double k = qBound(0.0, dist / 300.0, 1.0);
+                    v_dop = 20.0 + (v_route - 20.0) * k;
+                }
+            }
+            break;
+
+        case 4:                                     // «Б»
+            v_dop = v_tsel = KLUB_VBEL_KMH;
+            break;
+
+        default:                                    // «Ж», «З»
+            break;
         }
-        klub_brake = 1.0;
-        klub_auto_brake = true;
+        if (klub_k20 && (sig == 0 || sig == 1)) v_dop = 20.0;   // кнопка «К20»
     }
-    else if (v_kmh > v_limit + KLUB_SERVICE_OVER)
+    klub_v_dop = v_dop;
+    klub_v_tsel = v_tsel;
+
+    // --- 3. Превышение Vдоп: свисток ЭПК, через 6 с — экстренное ---
+    if (!klub_autostop && v_kmh > v_dop + KLUB_WHISTLE_OVER)
     {
-        if (!klub_auto_brake)
+        if (!klub_whistle)
         {
-            Journal::instance()->info(
-                QString("Tu10Head KLUB: превышение %1 км/ч при %2 - служебное торможение")
-                    .arg(v_kmh - v_limit, 0, 'f', 1)
-                    .arg(v_limit, 0, 'f', 0));
+            klub_whistle = true;
+            klub_whistle_rest = KLUB_CHECK_TIMEOUT;
+            j->info(QString("Tu10Head KLUB: превышение Vдоп на %1 км/ч - свисток ЭПК")
+                    .arg(v_kmh - v_dop, 0, 'f', 1));
         }
-        klub_brake = qMax(klub_brake, 0.55);
-        klub_auto_brake = true;
+        klub_whistle_rest -= dt;
+        if (klub_whistle_rest <= 0.0)
+        {
+            klub_whistle = false;
+            klubEmergency("скорость не снижена после свистка ЭПК");
+        }
     }
-    else if (klub_auto_brake && v_kmh <= v_limit - 1.0)
+    else if (klub_whistle)
+    {
+        klub_whistle = false;
+        j->info("Tu10Head KLUB: скорость снижена - свисток ЭПК прекращён");
+    }
+
+    // Тормоз после снятия автостопа отпускается плавно.
+    if (!klub_auto_brake && klub_brake > 0.0)
     {
         klub_brake = qMax(0.0, klub_brake - 0.4 * dt);
-        if (klub_brake < 0.01)
+    }
+
+    // --- 4. Проверка бдительности (п. 5.4) ---
+    const bool moving = v_kmh > 1.0;
+
+    // 4.1 Однократная при смене сигнала на более запрещающий.
+    if (!klub_check_active && !klub_autostop && moving && klub_prev_signal >= 0 &&
+        klubSignalRank(sig) > klubSignalRank(klub_prev_signal))
+    {
+        klubStartCheck(false);
+    }
+    klub_prev_signal = sig;
+
+    // 4.2 Однократная при трогании при «К», «КЖ», «Б» (п. 5.3.2);
+    //     в маневровом режиме отменена (п. 5.7.2).
+    if (moving && !klub_moving && !klub_ind_m && !klub_check_active && !klub_autostop &&
+        (sig == 0 || sig == 1 || sig == 4))
+    {
+        klubStartCheck(false);
+    }
+    klub_moving = moving;
+
+    // 4.3 Периодические проверки: интервал зависит от сигнала и режима.
+    const int band = klubBandFor(sig, klub_ind_m, v_kmh, v_tsel);
+    if (!moving || klub_autostop || band < 0)
+    {
+        klub_band = -1;
+        klub_next_check = 0.0;
+    }
+    else if (!klub_check_active)
+    {
+        if (band != klub_band)
         {
-            klub_brake = 0.0;
-            klub_auto_brake = false;
-            Journal::instance()->info("Tu10Head KLUB: скорость в норме, автоторможение снято");
+            klub_band = band;
+            klub_next_check = klubRandomInterval(band);
+        }
+        klub_next_check -= dt;
+        if (klub_next_check <= 0.0)
+        {
+            klubStartCheck(true);
         }
     }
 
-    // --- Проверка бдительности ---
-    if (v_kmh <= 3.0 || klub_autostop)
+    // 4.4 Отсчёт времени на ответ; для периодической — свисток и ещё 6 с.
+    if (klub_check_active)
     {
-        // На стоянке и во время автостопа проверок нет,
-        // счётчик движения сбрасывается
-        klub_vigilance_timer = 0.0;
-    }
-    else if (!klub_vigilance_active)
-    {
-        klub_vigilance_timer += dt;
-        if (klub_vigilance_timer >= KLUB_VIGILANCE_INTERVAL)
+        klub_check_rest -= dt;
+        if (klub_check_rest <= 0.0)
         {
-            klub_vigilance_active = true;
-            klub_vigilance_rest = KLUB_VIGILANCE_TIMEOUT;
-            Journal::instance()->info(
-                "Tu10Head KLUB: проверка бдительности, подтвердите клавишей К");
+            if (!klub_check_single && !klub_check_horn)
+            {
+                klub_check_horn = true;
+                klub_check_rest = KLUB_CHECK_TIMEOUT;
+                j->info("Tu10Head KLUB: бдительность не подтверждена - свисток ЭПК");
+            }
+            else
+            {
+                const bool single = klub_check_single;
+                klub_check_active = false;
+                klub_check_horn = false;
+                klubEmergency(single
+                    ? "однократная проверка бдительности не подтверждена"
+                    : "бдительность не подтверждена");
+            }
         }
     }
 
-    if (klub_vigilance_active)
+    // --- 5. Контроль трогания: 70 с в тяге без движения (п. 5.3.1) ---
+    if (!klub_autostop && throttle > 0.02 && v_kmh < 1.0)
     {
-        klub_vigilance_rest -= dt;
-        if (klub_vigilance_rest <= 0.0)
+        klub_traction_timer += dt;
+        if (klub_traction_timer >= KLUB_START_TIMEOUT)
         {
-            klub_vigilance_active = false;
-            klub_vigilance_timer = 0.0;
-            klub_autostop = true;
-            klub_brake = 1.0;
-            klub_auto_brake = true;
-            Journal::instance()->info(
-                "Tu10Head KLUB: бдительность не подтверждена - автостоп");
+            klub_traction_timer = 0.0;
+            klubEmergency("трогание не начато за 70 с");
         }
     }
+    else
+    {
+        klub_traction_timer = 0.0;
+    }
+
+    if (klub_autostop)
+    {
+        klub_brake = 1.0;
+        klub_auto_brake = true;
+    }
+}
+
+//------------------------------------------------------------------------------
+// Начать проверку бдительности: однократную или периодическую.
+//------------------------------------------------------------------------------
+void Tu10Head::klubStartCheck(const bool periodic)
+{
+    klub_check_active = true;
+    klub_check_single = !periodic;
+    klub_check_horn = false;
+    klub_check_rest = KLUB_CHECK_TIMEOUT;
+
+    Journal::instance()->info(periodic
+        ? "Tu10Head KLUB: периодическая проверка бдительности - нажмите РБ (К)"
+        : "Tu10Head KLUB: однократная проверка бдительности - нажмите РБ (К)");
+}
+
+//------------------------------------------------------------------------------
+// Экстренное торможение через ЭПК: тормоз держится до нажатия РБ (К).
+//------------------------------------------------------------------------------
+void Tu10Head::klubEmergency(const QString &reason)
+{
+    klub_autostop = true;
+    klub_brake = 1.0;
+    klub_auto_brake = true;
+    klub_check_active = false;
+    klub_check_horn = false;
+    klub_whistle = false;
+    klub_traction_timer = 0.0;
+
+    Journal::instance()->info(
+        QString("Tu10Head KLUB: %1 - экстренное торможение (автостоп)").arg(reason));
+}
+
+//------------------------------------------------------------------------------
+// Случайный интервал периодических проверок: 30-40 с или 60-90 с.
+//------------------------------------------------------------------------------
+double Tu10Head::klubRandomInterval(const int band)
+{
+    if (band == 2) return static_cast<double>(QRandomGenerator::global()->bounded(30, 41));
+    if (band == 4) return static_cast<double>(QRandomGenerator::global()->bounded(60, 91));
+    return 0.0;
 }
 
 //------------------------------------------------------------------------------
@@ -754,6 +968,19 @@ void Tu10Head::stepKeysControl(double t, double dt)
     }
     prev_klub_K = cur_K;
 
+    // --- КЛУБ-У: РМП (J), ВК (I), К20 (U) ---
+    const bool cur_J = getKeyState(KEY_J);
+    if (cur_J && !prev_klub_J) onKlubKey(167);
+    prev_klub_J = cur_J;
+
+    const bool cur_I = getKeyState(KEY_I);
+    if (cur_I && !prev_klub_I) onKlubKey(164);
+    prev_klub_I = cur_I;
+
+    const bool cur_U = getKeyState(KEY_U);
+    if (cur_U && !prev_klub_U) onKlubKey(171);
+    prev_klub_U = cur_U;
+
     // --- Отладка: раз в секунду печатаем состояние ---
     dbg_timer += dt;
     if (dbg_timer >= 1.0) {
@@ -835,13 +1062,14 @@ GET_MODULE(Tu10Head)
 //   180      - запрет отпуска тормозов
 //   181      - активная кабина: 1.0 для дисплея с SignalID 144,
 //              2.0 для дисплея с SignalID 145
-//   182      - код АЛС: 1=К, 2=КЖ, 3=Ж, 4=З (0 - нет кода)
-//   183      - число зелёных ячеек в показании (2 для одиночного зелёного)
+//   182      - сигнал БИЛ: 1=К, 2=КЖ, 3=Ж, 4=З, 0=Б
+//   183      - число зелёных ячеек в показании (0 при «Б»)
 //   184      - индикатор "прямо", 185 - "бок"
-//   186      - проверка бдительности, 187 - "М", 188 - "П", 189 - кассета
+//   186      - проверка бдительности / свисток / автостоп
+//               187 - "М", 188 - "П", 189 - кассета
 //   190      - скорость, км/ч
-//   191      - ограничение скорости, км/ч
-//   192      - следующее ограничение, км/ч
+//   191      - Vдоп, км/ч
+//   192      - Vцел, км/ч
 //   193      - реверсор: 1 вперёд, -1 назад, 0 нейтраль
 //   194      - расстояние до светофора, м
 //   195..197 - давление ТМ и УР (кабина 1 / кабина 2), кгс/см2
@@ -895,21 +1123,18 @@ void Tu10Head::fillKlubSignals(std::vector<float> *as, const simulator_time_t &t
     (*as)[180] = (klub_zapret || klub_auto_brake) ? 1.0f : 0.0f;  // запрет отпуска
     (*as)[181] = 1.0f;          // номер активной кабины (для 144 — 1.0)
 
-    int    alsn_code = 0;
     double alsn_dist = 0.0;
-    if (alsn_coil)
-    {
-        alsn_code = static_cast<int>(alsn_coil->getCode());
-        alsn_dist = alsn_coil->getNextSignalDistance();
-    }
-    (*as)[182] = static_cast<float>(alsn_code + 1);  // 1=К, 2=КЖ, 3=Ж, 4=З
-    int cells = alsn_code + 1;                       // 1=К, 2=КЖ, 3=Ж, 4=З
+    if (alsn_coil) alsn_dist = alsn_coil->getNextSignalDistance();
+
+    // Сигнал БИЛ: 1=К, 2=КЖ, 3=Ж, 4=З; 0 — «Б» (белый).
+    (*as)[182] = static_cast<float>(klub_signal < 4 ? klub_signal + 1 : 0);
+    int cells = (klub_signal < 4) ? klub_signal + 1 : 0;
     if (klub_flash_timer > 0.0) cells = 4;           // проверка ламп/повтор
     (*as)[183] = static_cast<float>(cells);          // число свободных блок-участков
 
     (*as)[184] = klub_side ? 0.0f : 1.0f;  // прямо
     (*as)[185] = klub_side ? 1.0f : 0.0f;  // бок
-    (*as)[186] = (klub_vigilance_active || klub_autostop) ? 1.0f : 0.0f;  // проверка бдительности
+    (*as)[186] = (klub_check_active || klub_whistle || klub_autostop) ? 1.0f : 0.0f;  // проверка бдительности
     (*as)[187] = klub_ind_m ? 1.0f : 0.0f;      // "М"
     (*as)[188] = klub_ind_p ? 1.0f : 0.0f;      // "П"
     (*as)[189] = klub_cassette ? 1.0f : 0.0f;   // кассета
@@ -917,11 +1142,8 @@ void Tu10Head::fillKlubSignals(std::vector<float> *as, const simulator_time_t &t
     const double v_kmh = qAbs(velocity) * 3.6;
     (*as)[190] = static_cast<float>(v_kmh);
 
-    double v_limit_next = 0.0;
-    if (speedmap) v_limit_next = speedmap->getNextLimit();
-    if (v_limit_next > KLUB_MAX_SPEED_KMH) v_limit_next = KLUB_MAX_SPEED_KMH;
-    (*as)[191] = static_cast<float>(klubSpeedLimit());
-    (*as)[192] = static_cast<float>(v_limit_next + klub_limit_offset);
+    (*as)[191] = static_cast<float>(klub_v_dop);
+    (*as)[192] = static_cast<float>(klub_v_tsel);
 
     (*as)[193] = static_cast<float>(direction);
 
