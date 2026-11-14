@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Russian Railway Simulator</string>
+   <string>MAGISTRAL</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="rootLayout">
@@ -96,7 +96,7 @@
          <item>
           <widget class="QLabel" name="lblTitle">
            <property name="text">
-            <string>Russian Railway Simulator</string>
+            <string>MAGISTRAL</string>
            </property>
           </widget>
          </item>

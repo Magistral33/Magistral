@@ -168,8 +168,8 @@
     <name>MainWindow</name>
     <message>
         <location filename="../forms/mainwindow.ui" line="14"/>
-        <source>Russian Railway Simulator</source>
-        <translation>Russian Railway Simulator</translation>
+        <source>MAGISTRAL</source>
+        <translation>MAGISTRAL</translation>
     </message>
     <message>
         <location filename="../forms/mainwindow.ui" line="31"/>
