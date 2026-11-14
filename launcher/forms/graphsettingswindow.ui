@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>GraphSettingsWindow</class>
  <widget class="QMainWindow" name="GraphSettingsWindow">
@@ -9,9 +9,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>353</width>
-    <height>761</height>
+    <width>440</width>
+    <height>880</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>420</width>
+    <height>640</height>
+   </size>
   </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -24,359 +30,125 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_9">
+    <property name="spacing">
+     <number>12</number>
+    </property>
+    <property name="leftMargin">
+     <number>16</number>
+    </property>
+    <property name="topMargin">
+     <number>14</number>
+    </property>
+    <property name="rightMargin">
+     <number>16</number>
+    </property>
+    <property name="bottomMargin">
+     <number>16</number>
+    </property>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0">
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="title">
-         <string>Current GPU</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string>Current GPU</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>22</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <widget class="QComboBox" name="cbListGPU">
+         <property name="editable">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="title">
+       <string>Window settings</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>22</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>8</number>
+         </property>
          <item>
-          <widget class="QComboBox" name="cbListGPU">
-           <property name="editable">
-            <bool>false</bool>
+          <widget class="QSpinBox" name="sbWindowWidth">
+           <property name="minimumSize">
+            <size>
+             <width>110</width>
+             <height>0</height>
+            </size>
            </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_2">
-        <property name="title">
-         <string>Window settings</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="sbWindowWidth">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="maximum">
-              <number>6880</number>
-             </property>
-             <property name="value">
-              <number>1280</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>X</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="sbWindowHeight">
-             <property name="minimumSize">
-              <size>
-               <width>100</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="maximum">
-              <number>3870</number>
-             </property>
-             <property name="value">
-              <number>720</number>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="cbFullScreenMode">
-           <property name="text">
-            <string>Fullscreen</string>
+           <property name="maximumSize">
+            <size>
+             <width>110</width>
+             <height>16777215</height>
+            </size>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="cbWindowDecoration">
-           <property name="text">
-            <string>Window decoration</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Display number</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="sbDisplayNumber">
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="maximum">
-              <number>100</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QCheckBox" name="cbLimitFPS">
-             <property name="text">
-              <string>FPS limit</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="sbMaxFPS">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>50</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="maximum">
-              <number>1000</number>
-             </property>
-             <property name="singleStep">
-              <number>10</number>
-             </property>
-             <property name="value">
-              <number>60</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="title">
-         <string>Multisampling</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>MSAA</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lMSAA">
-             <property name="text">
-              <string>2x</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QSlider" name="hsMSAA">
-           <property name="minimum">
-            <number>0</number>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
            <property name="maximum">
-            <number>3</number>
+            <number>6880</number>
            </property>
            <property name="value">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="title">
-         <string>View settings</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_4">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>View distanse, m</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSpinBox" name="sbViewDistance">
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-             <property name="maximum">
-              <number>100000</number>
-             </property>
-             <property name="singleStep">
-              <number>100</number>
-             </property>
-             <property name="value">
-              <number>2000</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_6">
-        <property name="title">
-         <string>Shadows</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <item>
-          <widget class="QCheckBox" name="cbShowShadows">
-           <property name="text">
-            <string>Show shadows</string>
+            <number>1280</number>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Shadows quality</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="cbSwadowsQuality">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_6">
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>20</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>20</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="text">
-            <string>Swadow map resolution</string>
+            <string>X</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -384,112 +156,577 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="cbShadowsMap">
-           <property name="enabled">
-            <bool>false</bool>
+          <widget class="QSpinBox" name="sbWindowHeight">
+           <property name="minimumSize">
+            <size>
+             <width>110</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>110</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="maximum">
+            <number>3870</number>
+           </property>
+           <property name="value">
+            <number>720</number>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_8">
-           <item>
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Swadow's cascades</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lShadowsCascades">
-             <property name="text">
-              <string>1</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QSlider" name="hsShadowsCascades">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>4</number>
-           </property>
+          <spacer name="horizontalSpacer_2">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbFullScreenMode">
+         <property name="text">
+          <string>Fullscreen</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbWindowDecoration">
+         <property name="text">
+          <string>Window decoration</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Display number</string>
+           </property>
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_9">
-           <item>
-            <widget class="QLabel" name="label_8">
-             <property name="text">
-              <string>Swadow's distance, m</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="lShadowsDistance">
-             <property name="text">
-              <string>30</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
-          <widget class="QSlider" name="hsShadowsDistance">
+          <widget class="QSpinBox" name="sbDisplayNumber">
+           <property name="minimumSize">
+            <size>
+             <width>70</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>70</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="cbLimitFPS">
+           <property name="text">
+            <string>FPS limit</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sbMaxFPS">
            <property name="enabled">
             <bool>false</bool>
            </property>
-           <property name="minimum">
-            <number>20</number>
+           <property name="minimumSize">
+            <size>
+             <width>70</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>70</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
            <property name="maximum">
-            <number>300</number>
+            <number>1000</number>
            </property>
            <property name="singleStep">
             <number>10</number>
            </property>
            <property name="value">
-            <number>30</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+            <number>60</number>
            </property>
           </widget>
          </item>
         </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="title">
+       <string>Multisampling</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>22</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>MSAA</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="lMSAA">
+           <property name="text">
+            <string>2x</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QSlider" name="hsMSAA">
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>3</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_3">
+      <property name="title">
+       <string>View settings</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>22</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>View distanse, m</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sbViewDistance">
+           <property name="minimumSize">
+            <size>
+             <width>120</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>120</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+           <property name="singleStep">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>2000</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QGroupBox" name="groupBox_6">
+      <property name="title">
+       <string>Shadows</string>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="leftMargin">
+        <number>12</number>
+       </property>
+       <property name="topMargin">
+        <number>22</number>
+       </property>
+       <property name="rightMargin">
+        <number>12</number>
+       </property>
+       <property name="bottomMargin">
+        <number>12</number>
+       </property>
+       <item>
+        <widget class="QCheckBox" name="cbShowShadows">
+         <property name="text">
+          <string>Show shadows</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <property name="spacing">
+          <number>6</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Shadows quality</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbSwadowsQuality">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Swadow map resolution</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cbShadowsMap">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Swadow's cascades</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="lShadowsCascades">
+           <property name="text">
+            <string>1</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QSlider" name="hsShadowsCascades">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>4</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Swadow's distance, m</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_8">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="lShadowsDistance">
+           <property name="text">
+            <string>30</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QSlider" name="hsShadowsDistance">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>20</number>
+         </property>
+         <property name="maximum">
+          <number>300</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>30</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>10</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <spacer name="horizontalSpacer_9">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pbGraphApply">
+        <property name="minimumSize">
+         <size>
+          <width>130</width>
+          <height>38</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Apply</string>
+        </property>
+        <property name="primary" stdset="0">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
-        <item>
-         <widget class="QPushButton" name="pbGraphApply">
-          <property name="text">
-           <string>Apply</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pbGraphCancel">
-          <property name="text">
-           <string>Cancel</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
+       <widget class="QPushButton" name="pbGraphCancel">
+        <property name="minimumSize">
+         <size>
+          <width>130</width>
+          <height>38</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Cancel</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

@@ -8,5 +8,8 @@
         <file>images/1_ok.png</file>
         <file>images/2_cancel.png</file>
         <file>images/3_warn.png</file>
+        <file>images/check.png</file>
+        <file>images/arrow-down.png</file>
+        <file>images/arrow-up.png</file>
     </qresource>
 </RCC>

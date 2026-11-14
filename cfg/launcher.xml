@@ -1,6 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Config>
     <Launcher>
+        <!-- Тема оформления лаунчера (файл themes/<имя>.qss) -->
+        <Theme>rrs-modern</Theme>
         <!-- Минимальная версия Windows -->
         <MinWinver>10</MinWinver>
         <MinWinBuild_NDIVIA>19041</MinWinBuild_NDIVIA>

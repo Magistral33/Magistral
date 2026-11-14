@@ -18,6 +18,7 @@
 #include    "ui_mainwindow.h"
 
 #include    <QPushButton>
+#include    <QStyle>
 #include    <QDir>
 #include    <QDirIterator>
 #include    <QStringList>
@@ -38,6 +39,16 @@
 const   QString MainWindow::STARTUP_SCN_SUBDIR = "startup";
 const   QString MainWindow::AUTO_START_VIEWER = "AutoStartViewer";
 const   QString MainWindow::AUTO_START_ROUTE_MAP = "AutoStartRouteMap";
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+static void repolish(QWidget *widget)
+{
+    widget->style()->unpolish(widget);
+    widget->style()->polish(widget);
+    widget->update();
+}
 
 //------------------------------------------------------------------------------
 //
@@ -127,8 +138,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(ui->pbSaveAsScenario, &QPushButton::released, this, &MainWindow::slotSaveTrainsConfigAsScenario);
 
-    setCentralWidget(ui->twMain);
-
     setFocusPolicy(Qt::ClickFocus);
 
     loadSettingsGUI();
@@ -163,6 +172,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
         // РџСЂРµРґСЃС‚Р°СЂС‚РѕРІР°СЏ РґРёР°РіРЅРѕСЃС‚РёРєР° GPU вЂ” РІСЂРµРјРµРЅРЅРѕ РѕС‚РєР»СЋС‡РµРЅР° РґР»СЏ РѕС‚Р»Р°РґРєРё
     gpuDiagnostics();
+
+    // Журнал диагностики показываем только при наличии сообщений
+    ui->tbLogGPU->setVisible(!ui->tbLogGPU->toPlainText().trimmed().isEmpty());
 
     connect(ui->actionGraphics_settings, &QAction::triggered, this, [this](){
         graphSettingsWindow->show();
@@ -1337,7 +1349,8 @@ void MainWindow::slotStartMapPressed()
 void MainWindow::slotSimulatorStarted()
 {
     is_start_button_to_stop_server = true;
-    ui->pbStartServer->setStyleSheet("background-color: red;");
+    ui->pbStartServer->setProperty("state", "stop");
+    repolish(ui->pbStartServer);
     ui->pbStartServer->setText(tr("Stop server"));
     ui->pbStartServer->setEnabled(true);
 
@@ -1395,7 +1408,8 @@ void MainWindow::slotSimulatorFinished(int exitCode, QProcess::ExitStatus exitSt
     Q_UNUSED(exitStatus);
 
     is_start_button_to_stop_server = false;
-    ui->pbStartServer->setStyleSheet("background-color: ;");
+    ui->pbStartServer->setProperty("state", QVariant());
+    repolish(ui->pbStartServer);
     ui->pbStartServer->setText(tr("Start server"));
 
     if (active_trains.empty() || (ui->lwRoutes->currentRow() < 0))
