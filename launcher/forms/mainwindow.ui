@@ -132,7 +132,7 @@
       </property>
       <widget class="QWidget" name="tab_local_server">
        <attribute name="title">
-        <string>Local server</string>
+        <string>Одиночная игра</string>
        </attribute>
        <layout class="QVBoxLayout" name="mainLayout">
         <property name="spacing">
@@ -463,7 +463,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Start server</string>
+             <string>Запуск</string>
             </property>
             <property name="primary" stdset="0">
              <bool>true</bool>
@@ -476,7 +476,7 @@
       </widget>
       <widget class="QWidget" name="tab_remote_server">
        <attribute name="title">
-        <string>Connect to server</string>
+        <string>Сетевая игра</string>
        </attribute>
        <layout class="QVBoxLayout" name="remoteLayout">
         <property name="spacing">

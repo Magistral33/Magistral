@@ -1892,7 +1892,7 @@ void MainWindow::slotSimulatorStarted()
     is_start_button_to_stop_server = true;
     ui->pbStartServer->setProperty("state", "stop");
     repolish(ui->pbStartServer);
-    ui->pbStartServer->setText(tr("Stop server"));
+    ui->pbStartServer->setText(tr("Остановка"));
     ui->pbStartServer->setEnabled(true);
 
     // Просмотрщик и карта запускаются всегда автоматически
@@ -1941,7 +1941,7 @@ void MainWindow::slotSimulatorFinished(int exitCode, QProcess::ExitStatus exitSt
     is_start_button_to_stop_server = false;
     ui->pbStartServer->setProperty("state", QVariant());
     repolish(ui->pbStartServer);
-    ui->pbStartServer->setText(tr("Start server"));
+    ui->pbStartServer->setText(tr("Запуск"));
 
     if (active_trains.empty() || (ui->lwRoutes->currentRow() < 0))
     {
