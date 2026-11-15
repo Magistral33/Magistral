@@ -120,7 +120,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(ui->pbSaveServer, &QPushButton::pressed,
             this, &MainWindow::slotSaveServer);    
-    connect(ui->pbSaveAsScenario, &QPushButton::released, this, &MainWindow::slotSaveTrainsConfigAsScenario);
 
     setFocusPolicy(Qt::ClickFocus);
 
@@ -145,6 +144,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Фото состава: картинка вписывается в свободную область карточки
     // с сохранением пропорций, исходный файл не меняется
     updateTrainPhoto();
+
+    // Фон страниц вкладок: иначе под карточками просвечивает фон
+    // QTabWidget (полоса другого оттенка)
+    for (QWidget *page : { ui->tab_local_server, ui->tab_remote_server })
+    {
+        page->setAutoFillBackground(true);
+        QPalette pal = page->palette();
+        pal.setColor(QPalette::Window, QColor("#0E1014"));
+        page->setPalette(pal);
+    }
 
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
     ui->tbScenarioDescription->setFocusPolicy(Qt::NoFocus);
@@ -188,21 +197,12 @@ void MainWindow::updateTrainPhoto()
 
     QWidget *card = photo->parentWidget();
 
-    // Область под фото: карточка минус заголовок, отступы и место
-    // под активными поездами (когда они есть)
+    // Свободное место внутри карточки: вычитаем заголовок и поля
     QRect card_rect = card->contentsRect();
 
-    // ширина и высота — по фактическому размеру карточки: фото вписывается
-    // целиком, с сохранением пропорций (исходник не меняется)
-    int area_w = card_rect.width() - 24;
-    int area_h = card_rect.height() - 40;
-
-    if (ui->vblActiveTrainsLayout->count() > 0)
-    {
-        area_h -= ui->vblActiveTrainsLayout->minimumSize().height() + 12;
-    }
-
-    QSize area(area_w, area_h);
+    // Фото вписывается целиком с сохранением пропорций: не больше ширины
+    // карточки и не больше её высоты (исходник не меняется)
+    QSize area(card_rect.width() - 24, card_rect.height() - 40);
 
     if (area.width() < 32 || area.height() < 32)
     {
@@ -1574,33 +1574,9 @@ void MainWindow::slotOnScenarioSelection(int cur_idx)
 //------------------------------------------------------------------------------
 void MainWindow::slotSaveTrainsConfigAsScenario()
 {
-    if (ui->leScnName->text().isEmpty())
-    {
-        return;
-    }
-
-    QStringList scnCode;
-    scnCode.clear();
-
-    slotUpdateActiveTrains();
-
-    scnCode.append(createTmpScenarioCode(active_trains));
-
-    createScenario(selectedRouteDirName, scnCode, ui->leScnName->text());
-
-    // TODO: Р Р°Р·РЅС‹Рµ С‚РёРїС‹ СЃ size_t
-    if (selected_route_idx < 0 || selected_route_idx >= routes_info.size())
-    {
-        return;
-    }
-
-    auto ri = &routes_info[selected_route_idx];
-
-    loadScenarios(*ri);
-
-    reloadScenariosList();
-
-    ui->pbStartServer->setEnabled(!active_trains.empty());
+    // Панель сохранения сценария убрана из интерфейса: сценарий
+    // создаётся только через стартовый набор, ручного сохранения нет
+    return;
 }
 
 //------------------------------------------------------------------------------
