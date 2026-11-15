@@ -176,6 +176,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
     ui->tbScenarioDescription->setFocusPolicy(Qt::NoFocus);
 
+    // Описания только для чтения: текст нельзя изменить (стереть или
+    // дописать), выделение и прокрутка остаются доступны
+    ui->ptRouteDescription->setReadOnly(true);
+    ui->ptTrainDescription->setReadOnly(true);
+    ui->tbScenarioDescription->setReadOnly(true);
+
         // РџСЂРµРґСЃС‚Р°СЂС‚РѕРІР°СЏ РґРёР°РіРЅРѕСЃС‚РёРєР° GPU вЂ” РІСЂРµРјРµРЅРЅРѕ РѕС‚РєР»СЋС‡РµРЅР° РґР»СЏ РѕС‚Р»Р°РґРєРё
     gpuDiagnostics();
 
