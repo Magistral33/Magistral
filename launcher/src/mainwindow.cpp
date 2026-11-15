@@ -16,6 +16,7 @@
 #include    "datetime.h"
 #include    "train-waypoint-widget.h"
 #include    "ui_mainwindow.h"
+#include    "ui_graphsettingswindow.h"
 
 #include    <QPushButton>
 #include    <QStyle>
@@ -35,6 +36,31 @@
 
 #include    <system-diagnostic.h>
 #include    <graphsettingswindow.h>
+
+const   QString MainWindow::WIDTH = "Width";
+const   QString MainWindow::HEIGHT = "Height";
+const   QString MainWindow::FULLSCREEN = "FullScreen";
+const   QString MainWindow::FOV_Y = "FovY";
+const   QString MainWindow::ZNEAR = "zNear";
+const   QString MainWindow::ZFAR = "zFar";
+const   QString MainWindow::SCREEN_NUM = "ScreenNumber";
+const   QString MainWindow::WIN_DECOR = "WindowDecoration";
+const   QString MainWindow::DOUBLE_BUFF = "DoubleBuffer";
+const   QString MainWindow::VSYNC = "VSync";
+const   QString MainWindow::NOTIFY_LEVEL = "NofifyLevel";
+const   QString MainWindow::VIEW_DIST = "ViewDistance";
+const   QString MainWindow::MAX_FPS = "MaxFPS";
+const   QString MainWindow::PHYSICAL_DEVICE = "PhysicalDevice";
+const   QString MainWindow::PHYSICAL_DEVICE_VENDOR_ID = "PhysicalDeviceVendorID";
+const   QString MainWindow::PHYSICAL_DEVICE_DEVICE_ID = "PhysicalDeviceDeviceID";
+const   QString MainWindow::SAMPLES = "Samples";
+const   QString MainWindow::DEPTH_FORMAT = "depthFormat";
+const   QString MainWindow::SHADOW = "Shadow";
+const   QString MainWindow::SHADOWS_PRESET = "ShadowsPreset";
+const   QString MainWindow::SHADOW_DISTANCE = "ShadowDistance";
+const   QString MainWindow::SHADOW_CASCADE = "ShadowCascade";
+const   QString MainWindow::SHADOW_RESOLUTION = "ShadowResolution";
+
 
 const   QString MainWindow::STARTUP_SCN_SUBDIR = "startup";
 const   QString MainWindow::AUTO_START_VIEWER = "AutoStartViewer";
@@ -133,11 +159,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->pbStartServer->setEnabled(false);
     is_start_button_to_stop_server = false;
 
-    // В строке меню оставляем только «Настройки» и «Помощь». Меню
-    // «Инструменты» появится, только если в cfg/launcher.xml есть <Tool>,
-    // иначе пустой пункт не должен занимать место в строке меню.
-    bool has_tools = !ui->menuTools->actions().isEmpty();
-    ui->menuTools->menuAction()->setVisible(has_tools);
+    // Строка меню больше не нужна: «Настройки» переехали кнопкой в строку
+    // вкладок, «Помощь» убрана. Меню «Инструменты» показывается, только
+    // если в cfg/launcher.xml есть доступный инструмент — тогда строка
+    // меню появляется снова (см. createToolsMenu).
+    ui->menuBar->setVisible(false);
 
     connect(ui->cbScenario, &QComboBox::currentIndexChanged, this, &MainWindow::slotOnScenarioSelection);
 
@@ -170,16 +196,599 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // Журнал диагностики показываем только при наличии сообщений
     ui->tbLogGPU->setVisible(!ui->tbLogGPU->toPlainText().trimmed().isEmpty());
 
-    connect(ui->actionGraphics_settings, &QAction::triggered, this, [this](){
-        graphSettingsWindow->show();
-    });
-
-    // РћРєРЅРѕ СЃРєСЂС‹РІР°РµС‚СЃСЏ, Р° РЅРµ СѓРґР°Р»СЏРµС‚СЃСЏ
-    helpWindow->setAttribute(Qt::WA_DeleteOnClose, false);
+    // Настройки графики — третья вкладка, её виджеты создаются здесь
+    setGraphicsWidgets();
 
     createToolsMenu();
+}
 
-    createHelpMenu();
+//------------------------------------------------------------------------------
+// Настройки графики: вкладка «Настройки»
+//------------------------------------------------------------------------------
+void MainWindow::setGraphicsWidgets()
+{
+    settingsWindow = new GraphSettingsWindow(ui->tab_settings);
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    connect(settings_ui->pbGraphApply, &QPushButton::released,
+            this, &MainWindow::slotApplyGraphSettings);
+
+    connect(settings_ui->pbGraphCancel, &QPushButton::released,
+            this, &MainWindow::slotCancelGraphSettings);
+
+    connect(settings_ui->cbWindowDecoration, &QCheckBox::stateChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->cbFullScreenMode, &QCheckBox::stateChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->sbWindowWidth, &QSpinBox::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->sbWindowHeight, &QSpinBox::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->cbLimitFPS, &QCheckBox::checkStateChanged, this, [this, settings_ui](Qt::CheckState state){
+
+        settings_ui->pbGraphApply->setEnabled(true);
+        settings_ui->sbMaxFPS->setEnabled(state == Qt::Checked);
+    });
+
+    connect(settings_ui->sbMaxFPS, &QSpinBox::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->sbViewDistance, &QSpinBox::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->sbDisplayNumber, &QSpinBox::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->hsMSAA, &QSlider::valueChanged, this, [this, settings_ui](int){
+        settings_ui->pbGraphApply->setEnabled(true);
+        settings_ui->lMSAA->setText(QString("%1x").arg((1 << settings_ui->hsMSAA->value())));
+    });
+
+
+    connect(settings_ui->cbListGPU, &QComboBox::currentIndexChanged,
+            this, &MainWindow::slotOnSettingsGPUChanged);
+
+    settings_ui->cbSwadowsQuality->addItem(tr("Low"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Medium"));
+    settings_ui->cbSwadowsQuality->addItem(tr("High"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Ultra"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Custom"));
+
+    settings_ui->cbShadowsMap->addItem(tr("Low"));
+    settings_ui->cbShadowsMap->addItem(tr("Medium"));
+    settings_ui->cbShadowsMap->addItem(tr("High"));
+
+    connect(settings_ui->cbSwadowsQuality, &QComboBox::currentIndexChanged, this, [this, settings_ui](int idx){
+
+        if (idx < shadowsPresets.size())
+        {
+            ulockShadowsSettings(settings_ui, false);
+            auto sp = shadowsPresets[idx];
+
+            settings_ui->cbShadowsMap->setCurrentIndex(sp.resolution_idx);
+            settings_ui->hsShadowsCascades->setValue(sp.cascades);
+            settings_ui->hsShadowsDistance->setValue(sp.distanse);
+        }
+        else
+        {
+            ulockShadowsSettings(settings_ui, true);
+        }
+
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->cbShowShadows, &QCheckBox::stateChanged, this, [this, settings_ui](int){
+
+        if (settings_ui->cbShowShadows->checkState() == Qt::CheckState::Checked)
+        {
+            settings_ui->cbSwadowsQuality->setEnabled(true);
+        }
+        else
+        {
+            settings_ui->cbSwadowsQuality->setEnabled(false);
+        }
+
+        settings_ui->pbGraphApply->setEnabled(true);
+    });
+
+    connect(settings_ui->hsShadowsCascades, &QSlider::valueChanged, this, [this, settings_ui](int idx){
+        settings_ui->lShadowsCascades->setText(QString("%1").arg(idx));
+    });
+
+    connect(settings_ui->hsShadowsDistance, &QSlider::valueChanged, this, [this, settings_ui](int idx){
+        settings_ui->lShadowsDistance->setText(QString("%1").arg(idx));
+    });
+
+    connect(settings_ui->cbShadowsMap, &QComboBox::currentIndexChanged, this, [this, settings_ui](int idx){
+
+        if (idx > 0 && idx < shadowMapResolution.size())
+        {
+            auto resolution = shadowMapResolution[idx];
+
+            int index = 0;
+            findSetting(SHADOW_RESOLUTION, fd_list, index);
+            fd_list[index] = QPair<QString, QVariant>(SHADOW_RESOLUTION, resolution);
+        }
+    });
+
+    connect(settingsWindow->getUi()->pbGraphApply, &QPushButton::released,
+            this, &MainWindow::slotApplyGraphSettings);
+
+    connect(settingsWindow->getUi()->pbGraphCancel, &QPushButton::released,
+            this, &MainWindow::slotCancelGraphSettings);
+
+    // настройки перечитываются каждый раз, когда открывают вкладку
+    connect(ui->twMain, &QTabWidget::currentChanged, this, [this, settings_ui](int idx)
+    {
+        if (idx == ui->twMain->indexOf(ui->tab_settings))
+        {
+            showSettingsTab();
+        }
+    });
+}
+
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+MainWindow::~MainWindow()
+{
+    delete settingsWindow;
+    delete ui;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
+{
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    this->gpus_info = gpus_info;
+
+    if (gpus_info.empty())
+    {
+        return;
+    }
+
+    // Выбираем самый производительный GPU из найденных в качестве текущего
+    int max_score = 0;
+    int best_gpu_idx = -1;
+
+    for (size_t i = 0; i < gpus_info.size(); ++i)
+    {
+        auto &gpu_info = gpus_info[i];
+
+        if (gpu_info.score > max_score)
+        {
+            max_score = gpu_info.score;
+            best_gpu_idx = i;
+        }
+
+        settings_ui->cbListGPU->addItem(gpu_info.deviceName);        
+    }    
+
+    // Если видюха еще не настраивалась никогда
+    if (current_gpu_idx == -1)
+    {
+        // выбираем лючшую из найденных
+        settings_ui->cbListGPU->setCurrentIndex(best_gpu_idx);
+        current_gpu_idx = best_gpu_idx;
+
+        setDefaultSettingsForChangedGPU(current_gpu_idx);
+
+        // Сохраняем настройки
+        saveGraphSettings(fd_list);
+    }
+    else
+    {
+        // Пытаемся найти GPU по аппаратному ID из конфига
+        int saved_vendor_id = 0;
+        int saved_device_id = 0;
+
+        for (const auto& field : fd_list)
+        {
+            if (field.first == PHYSICAL_DEVICE_VENDOR_ID)
+                saved_vendor_id = field.second.toInt();
+            if (field.first == PHYSICAL_DEVICE_DEVICE_ID)
+                saved_device_id = field.second.toInt();
+        }
+
+        int matched_idx = -1;
+        if (saved_vendor_id != 0 && saved_device_id != 0)
+        {
+            for (size_t i = 0; i < gpus_info.size(); ++i)
+            {
+                if (gpus_info[i].vendorID == static_cast<uint32_t>(saved_vendor_id) &&
+                    gpus_info[i].deviceID == static_cast<uint32_t>(saved_device_id))
+                {
+                    matched_idx = static_cast<int>(i);
+                    break;
+                }
+            }
+        }
+
+        if (matched_idx >= 0)
+        {
+            current_gpu_idx = matched_idx;
+        }
+        else if (current_gpu_idx >= 0 && current_gpu_idx < static_cast<int>(gpus_info.size()))
+        {
+            // Fallback на старый индекс, если не нашли по ID
+        }
+        else
+        {
+            current_gpu_idx = best_gpu_idx;
+        }
+
+        settings_ui->cbListGPU->setCurrentIndex(current_gpu_idx);
+
+        auto &gpu_info = gpus_info[current_gpu_idx];
+
+        // Устанавливаем максимальный уровень сглаживания MSAA который обеспечивает GPU
+        int s = qRound(std::log2(gpu_info.framebufferColorSamplesCounts));
+        settings_ui->hsMSAA->setMaximum(s);
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::loadGraphicsSettings(QString file_name)
+{
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    FileSystem &fs = FileSystem::getInstance();
+    QString config_dir = QString(fs.getConfigDir().c_str());
+
+    settings_path = config_dir + fs.separator() + file_name + ".xml";
+
+    QString secName = "Viewer";
+
+    CfgReader   cfg;
+
+    fd_list.clear();
+
+    if (cfg.load(settings_path))
+    {
+        int width = 0;
+        cfg.getInt(secName, WIDTH, width);
+        fd_list.append(QPair<QString, QVariant>(WIDTH, width));
+
+        int height = 0;
+        cfg.getInt(secName, HEIGHT, height);
+        fd_list.append(QPair<QString, QVariant>(HEIGHT, height));
+
+        int fullscreen = 0;
+        cfg.getInt(secName, FULLSCREEN, fullscreen);
+        fd_list.append(QPair<QString, QVariant>(FULLSCREEN, fullscreen));
+
+        double fovY = 0;
+        cfg.getDouble(secName, FOV_Y, fovY);
+        fd_list.append(QPair<QString, QVariant>(FOV_Y, fovY));
+
+        double zNear = 0;
+        cfg.getDouble(secName, ZNEAR, zNear);
+        fd_list.append(QPair<QString, QVariant>(ZNEAR, zNear));
+
+        double zFar = 0;
+        cfg.getDouble(secName, ZFAR, zFar);
+        fd_list.append(QPair<QString, QVariant>(ZFAR, zFar));
+
+        int screen_num = 0;
+        cfg.getInt(secName, SCREEN_NUM, screen_num);
+        fd_list.append(QPair<QString, QVariant>(SCREEN_NUM, screen_num));
+
+        int win_decor = 0;
+        cfg.getInt(secName, WIN_DECOR, win_decor);
+        fd_list.append(QPair<QString, QVariant>(WIN_DECOR, win_decor));
+
+        int double_buff = 0;
+        cfg.getInt(secName, DOUBLE_BUFF, double_buff);
+        fd_list.append(QPair<QString, QVariant>(DOUBLE_BUFF, double_buff));
+
+        int vsync = 0;
+        cfg.getInt(secName, VSYNC, vsync);
+        fd_list.append(QPair<QString, QVariant>(VSYNC, vsync));
+
+        int max_fps = 0;
+        cfg.getInt(secName, MAX_FPS, max_fps);
+        fd_list.append(QPair<QString, QVariant>(MAX_FPS, max_fps));
+
+        cfg.getInt(secName, PHYSICAL_DEVICE, current_gpu_idx);
+        fd_list.append(QPair<QString, QVariant>(PHYSICAL_DEVICE, current_gpu_idx));
+
+        {
+            int tmp = 0;
+            cfg.getInt(secName, PHYSICAL_DEVICE_VENDOR_ID, tmp);
+            fd_list.append(QPair<QString, QVariant>(PHYSICAL_DEVICE_VENDOR_ID, tmp));
+        }
+        {
+            int tmp = 0;
+            cfg.getInt(secName, PHYSICAL_DEVICE_DEVICE_ID, tmp);
+            fd_list.append(QPair<QString, QVariant>(PHYSICAL_DEVICE_DEVICE_ID, tmp));
+        }
+
+        double view_dist = 0;
+        cfg.getDouble(secName, VIEW_DIST, view_dist);
+        fd_list.append(QPair<QString, QVariant>(VIEW_DIST, view_dist));
+
+        int samples = 0;
+        cfg.getInt(secName, SAMPLES, samples);
+        fd_list.append(QPair<QString, QVariant>(SAMPLES, samples));
+
+        int depthFormat = 0;
+        cfg.getInt(secName, DEPTH_FORMAT, depthFormat);
+        fd_list.append(QPair<QString, QVariant>(DEPTH_FORMAT, depthFormat));
+
+        bool shadow = false;
+        cfg.getBool(secName, SHADOW, shadow);
+        fd_list.append(QPair<QString, QVariant>(SHADOW, shadow));
+
+        int shadows_preset = 0;
+        cfg.getInt(secName, SHADOWS_PRESET, shadows_preset);
+        fd_list.append(QPair<QString, QVariant>(SHADOWS_PRESET, shadows_preset));
+
+        double shadow_dist = 0;
+        cfg.getDouble(secName, SHADOW_DISTANCE, shadow_dist);
+        fd_list.append(QPair<QString, QVariant>(SHADOW_DISTANCE, qRound(shadow_dist)));
+
+        int shadows_cascade = 0;
+        cfg.getInt(secName, SHADOW_CASCADE, shadows_cascade);
+        fd_list.append(QPair<QString, QVariant>(SHADOW_CASCADE, shadows_cascade));
+
+        int shadows_resolution = 0;
+        cfg.getInt(secName, SHADOW_RESOLUTION, shadows_resolution);
+        fd_list.append(QPair<QString, QVariant>(SHADOW_RESOLUTION, shadows_resolution));
+
+        updateGraphSettings(fd_list, settings_ui);
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::ulockShadowsSettings(Ui::SettingsWidgets *settings_ui, bool lock)
+{
+    settings_ui->cbShadowsMap->setEnabled(lock);
+    settings_ui->hsShadowsCascades->setEnabled(lock);
+    settings_ui->hsShadowsDistance->setEnabled(lock);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::updateGraphSettings(FieldsDataList &fd_list, Ui::SettingsWidgets *settings_ui)
+{
+    settings_ui->sbWindowWidth->setValue(findSetting(WIDTH, fd_list).second.toInt());
+    settings_ui->sbWindowHeight->setValue(findSetting(HEIGHT, fd_list).second.toInt());
+
+    findSetting(FULLSCREEN, fd_list).second == 1 ?
+        settings_ui->cbFullScreenMode->setCheckState(Qt::CheckState::Checked) :
+        settings_ui->cbFullScreenMode->setCheckState(Qt::CheckState::Unchecked);
+
+    findSetting(WIN_DECOR, fd_list).second == 1 ?
+        settings_ui->cbWindowDecoration->setCheckState(Qt::CheckState::Checked) :
+        settings_ui->cbWindowDecoration->setCheckState(Qt::CheckState::Unchecked);
+
+    findSetting(VSYNC, fd_list).second == 1 ?
+        settings_ui->cbLimitFPS->setCheckState(Qt::CheckState::Unchecked) :
+        settings_ui->cbLimitFPS->setCheckState(Qt::CheckState::Checked);
+
+    settings_ui->sbMaxFPS->setValue(findSetting(MAX_FPS, fd_list).second.toInt());
+
+    settings_ui->cbListGPU->setCurrentIndex(findSetting(PHYSICAL_DEVICE, fd_list).second.toInt());
+
+    settings_ui->sbDisplayNumber->setValue(findSetting(SCREEN_NUM, fd_list).second.toInt());
+
+    settings_ui->sbViewDistance->setValue(findSetting(VIEW_DIST, fd_list).second.toInt());
+
+    int samples = findSetting(SAMPLES, fd_list).second.toInt();
+    int s = qRound(std::log2(samples));
+    settings_ui->hsMSAA->setValue(s);    
+
+    bool shadow = findSetting(SHADOW, fd_list).second.toBool();
+    shadow ? settings_ui->cbShowShadows->setCheckState(Qt::CheckState::Checked) : settings_ui->cbShowShadows->setCheckState(Qt::CheckState::Unchecked);
+    settings_ui->cbSwadowsQuality->setEnabled(true);
+
+    int shadows_preset = findSetting(SHADOWS_PRESET, fd_list).second.toInt();
+
+    if (shadows_preset > 0 && shadows_preset < settings_ui->cbSwadowsQuality->count())
+    {
+        settings_ui->cbSwadowsQuality->setCurrentIndex(shadows_preset);
+    }
+
+    if (shadows_preset >= shadowsPresets.size())
+    {
+        ulockShadowsSettings(settings_ui, true);
+    }
+    else
+    {
+        ulockShadowsSettings(settings_ui, false);
+    }
+
+    for (size_t i = 0; i < shadowMapResolution.size(); ++i)
+    {
+        if (shadowMapResolution[i] == findSetting(SHADOW_RESOLUTION, fd_list).second.toInt())
+        {
+            settings_ui->cbShadowsMap->setCurrentIndex(i);
+        }
+    }
+
+    settings_ui->hsShadowsCascades->setValue(findSetting(SHADOW_CASCADE, fd_list).second.toInt());
+    settings_ui->lShadowsCascades->setText(QString("%1").arg(settings_ui->hsShadowsCascades->value()));
+
+    settings_ui->hsShadowsDistance->setValue(findSetting(SHADOW_DISTANCE, fd_list).second.toInt());
+    settings_ui->lShadowsDistance->setText(QString("%2").arg(settings_ui->hsShadowsDistance->value()));
+
+    settings_ui->pbGraphApply->setEnabled(false);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::applyGraphSettings(FieldsDataList &fd_list,
+                                             Ui::SettingsWidgets *settings_ui)
+{
+    int idx = 0;
+
+    findSetting(WIDTH, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(WIDTH, settings_ui->sbWindowWidth->value());
+
+    findSetting(HEIGHT, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(HEIGHT, settings_ui->sbWindowHeight->value());
+
+    findSetting(FULLSCREEN, fd_list, idx);
+    if (settings_ui->cbFullScreenMode->checkState() == Qt::CheckState::Checked)
+    {
+        fd_list[idx] = QPair<QString, QVariant>(FULLSCREEN, 1);
+    }
+    else
+    {
+        fd_list[idx] = QPair<QString, QVariant>(FULLSCREEN, 0);
+    }
+
+    findSetting(VSYNC, fd_list, idx);
+    if (settings_ui->cbLimitFPS->checkState() == Qt::CheckState::Checked)
+    {
+        fd_list[idx] = QPair<QString, QVariant>(VSYNC, 0);
+    }
+    else
+    {
+        fd_list[idx] = QPair<QString, QVariant>(VSYNC, 1);
+    }
+
+    findSetting(MAX_FPS, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(MAX_FPS, settings_ui->sbMaxFPS->value());
+
+    findSetting(PHYSICAL_DEVICE, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(PHYSICAL_DEVICE, settings_ui->cbListGPU->currentIndex());
+
+    int gpu_idx = settings_ui->cbListGPU->currentIndex();
+    if (gpu_idx >= 0 && gpu_idx < static_cast<int>(gpus_info.size()))
+    {
+        findSetting(PHYSICAL_DEVICE_VENDOR_ID, fd_list, idx);
+        fd_list[idx] = QPair<QString, QVariant>(PHYSICAL_DEVICE_VENDOR_ID, static_cast<uint32_t>(gpus_info[gpu_idx].vendorID));
+
+        findSetting(PHYSICAL_DEVICE_DEVICE_ID, fd_list, idx);
+        fd_list[idx] = QPair<QString, QVariant>(PHYSICAL_DEVICE_DEVICE_ID, static_cast<uint32_t>(gpus_info[gpu_idx].deviceID));
+    }
+
+    findSetting(WIN_DECOR, fd_list, idx);
+    if (settings_ui->cbWindowDecoration->checkState() == Qt::CheckState::Checked)
+    {
+        fd_list[idx] = QPair<QString, QVariant>(WIN_DECOR, 1);
+    }
+    else
+    {
+        fd_list[idx] = QPair<QString, QVariant>(WIN_DECOR, 0);
+    }
+
+    findSetting(SCREEN_NUM, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SCREEN_NUM, settings_ui->sbDisplayNumber->value());
+
+    findSetting(VIEW_DIST, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(VIEW_DIST, settings_ui->sbViewDistance->value());
+
+    findSetting(SAMPLES, fd_list, idx);
+    int samples = (1 << settings_ui->hsMSAA->value());
+    fd_list[idx] = QPair<QString, QVariant>(SAMPLES, samples);
+
+    findSetting(SHADOW, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SHADOW, settings_ui->cbShowShadows->checkState() == Qt::CheckState::Checked ? true : false);
+
+    findSetting(SHADOW_RESOLUTION, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SHADOW_RESOLUTION, shadowMapResolution[settings_ui->cbShadowsMap->currentIndex()]);
+
+    findSetting(SHADOW_CASCADE, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SHADOW_CASCADE, settings_ui->hsShadowsCascades->value());
+
+    findSetting(SHADOW_DISTANCE, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SHADOW_DISTANCE, settings_ui->hsShadowsDistance->value());
+
+    findSetting(SHADOWS_PRESET, fd_list, idx);
+    fd_list[idx] = QPair<QString, QVariant>(SHADOWS_PRESET, settings_ui->cbSwadowsQuality->currentIndex());
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::saveGraphSettings(FieldsDataList &fd_list)
+{
+    CfgEditor editor;
+
+    editor.editFile(settings_path, "Viewer", fd_list);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::showSettingsTab()
+{
+    // при каждом показе вкладки перечитываем настройки с диска
+    loadGraphicsSettings("settings");
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::setDefaultSettingsForChangedGPU(int gpu_idx)
+{
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    auto &gpu_info = gpus_info[gpu_idx];    
+
+    applyGraphSettings(fd_list, settings_ui);
+    updateGraphSettings(fd_list, settings_ui);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::slotOnSettingsGPUChanged(int idx)
+{
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    setDefaultSettingsForChangedGPU(idx);
+    settings_ui->pbGraphApply->setEnabled(true);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::slotApplyGraphSettings()
+{
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    applyGraphSettings(fd_list, settings_ui);
+
+    updateGraphSettings(fd_list, settings_ui);
+
+    settings_ui->pbGraphApply->setEnabled(false);
+
+    saveGraphSettings(fd_list);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::slotCancelGraphSettings()
+{
+    updateGraphSettings(fd_list, settingsWindow->getUi());
+    settingsWindow->getUi()->pbGraphApply->setEnabled(false);
+
+    ui->twMain->setCurrentIndex(0);
 }
 
 //------------------------------------------------------------------------------
@@ -235,10 +844,6 @@ void MainWindow::showEvent(QShowEvent *event)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-MainWindow::~MainWindow()
-{
-    delete ui;
-}
 
 //------------------------------------------------------------------------------
 //
@@ -691,68 +1296,17 @@ void MainWindow::gpuDiagnostics()
             }
 
             start_viewer_allowed = true;
-            graphSettingsWindow->setSettingsGPU(gpus_info);
+
+            if (settingsWindow != nullptr)
+            {
+                setSettingsGPU(gpus_info);
+            }
 
             break;
         }
     }
 }
 
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-void MainWindow::createHelpMenu()
-{
-    const FileSystem &fs = FileSystem::getInstance();
-    auto docsDir = fs.getDocsDir();
-
-    QDir docs(QString(docsDir.c_str()));
-    QDirIterator docs_files(docs.path(),
-                            QStringList() << "*.pdf",
-                            QDir::NoDotAndDotDot | QDir::Files);
-
-    while (docs_files.hasNext())
-    {
-        QString fullPath = docs_files.next();
-        QFileInfo fileInfo(fullPath);
-
-        //train_info.train_config_path = fileInfo.baseName();
-
-        QAction *action = new QAction(fileInfo.baseName());
-        ui->menuHelp->addAction(action);
-
-        connect(action, &QAction::triggered, this, [this, fullPath, fileInfo]{
-
-            if (fullPath.isEmpty())
-            {
-                return;
-            }
-
-            auto *viewer = new PdfViewer(helpWindow);
-
-            if (!viewer->load(fullPath))
-            {
-                delete viewer;
-                return;
-            }
-
-            if (auto* old = helpWindow->centralWidget())
-            {
-                old->deleteLater();
-            }
-
-            helpWindow->setCentralWidget(viewer);
-            helpWindow->setWindowTitle(QString("%2 | %1 СЃС‚СЂР°РЅРёС†").arg(viewer->pageCount()).arg(fileInfo.baseName()));
-            helpWindow->show();
-            helpWindow->resize(900, 1000);
-
-            QTimer::singleShot(0, viewer, [this, viewer]() {
-                viewer->adjustWindowToPageWidth(0); // 0 = РїРµСЂРІР°СЏ СЃС‚СЂР°РЅРёС†Р°
-                this->centerWindow(helpWindow);
-            });
-        });
-    }
-}
 
 //------------------------------------------------------------------------------
 //
@@ -841,8 +1395,11 @@ void MainWindow::createToolsMenu()
 
         ui->menuTools->addAction(action);
 
-        // Меню инструментов появляется с первым загруженным инструментом
+        // Меню инструментов появляется с первым загруженным инструментом,
+        // и вместе с ним показывается строка меню (без инструментов она
+        // скрыта, чтобы не занимать место)
         ui->menuTools->menuAction()->setVisible(true);
+        ui->menuBar->setVisible(true);
 
         secNode = cfg.getNextSection();
     }
@@ -1073,7 +1630,6 @@ void MainWindow::loadSettingsGUI()
         QString style_sheet = readStyleSheet(QString(theme_path.c_str()));
 
         this->setStyleSheet(style_sheet);
-        helpWindow->setStyleSheet(style_sheet);
     }
 }
 
@@ -1103,7 +1659,6 @@ void MainWindow::loadConfig()
         QString style_sheet = readStyleSheet(QString(theme_path.c_str()));
 
         this->setStyleSheet(style_sheet);
-        helpWindow->setStyleSheet(style_sheet);
 
         cfg.getInt(secName, "MinWinver", winver.majorVer);
         cfg.getInt(secName, "MinWinBuild_NVIDIA", winver.buildNvidia);

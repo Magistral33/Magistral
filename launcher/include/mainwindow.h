@@ -195,11 +195,9 @@ private:
 
     bool start_viewer_allowed = false;
 
-    GraphSettingsWindow *graphSettingsWindow = new GraphSettingsWindow(this);
 
     [[maybe_unused]] RequireWindowsVersion winver;
 
-    void createHelpMenu();
 
     void createToolsMenu();
 
@@ -281,7 +279,84 @@ private slots:
 
     void showEvent(QShowEvent *event) override;
 
-    void slotSaveTrainsConfigAsScenario();   
+    void slotSaveTrainsConfigAsScenario();
+
+private:
+
+    // --- настройки графики (вкладка «Настройки») ---------------------------
+    GraphSettingsWindow *settingsWindow = nullptr;
+
+    gpus_info_list_t settings_gpus;
+
+    int current_gpu_idx = -1;
+
+    FieldsDataList fd_list;
+
+    static const   QString WIDTH;
+    static const   QString HEIGHT;
+    static const   QString FULLSCREEN;
+    static const   QString FOV_Y;
+    static const   QString ZNEAR;
+    static const   QString ZFAR;
+    static const   QString SCREEN_NUM;
+    static const   QString WIN_DECOR;
+    static const   QString DOUBLE_BUFF;
+    static const   QString VSYNC;
+    static const   QString NOTIFY_LEVEL;
+    static const   QString VIEW_DIST;
+    static const   QString MAX_FPS;
+    static const   QString PHYSICAL_DEVICE;
+    static const   QString PHYSICAL_DEVICE_VENDOR_ID;
+    static const   QString PHYSICAL_DEVICE_DEVICE_ID;
+    static const   QString SAMPLES;
+    static const   QString DEPTH_FORMAT;
+    static const   QString SHADOW;
+    static const   QString SHADOWS_PRESET;
+    static const   QString SHADOW_DISTANCE;
+    static const   QString SHADOW_CASCADE;
+    static const   QString SHADOW_RESOLUTION;
+
+    struct ShadowsPreset
+    {
+        size_t  resolution_idx = 0;
+        int     cascades = 1;
+        int     distanse = 20;
+    };
+
+    std::vector<uint32_t> shadowMapResolution = {1024, 2048, 4096};
+
+    std::vector<ShadowsPreset> shadowsPresets = {
+        {0, 1, 30},
+        {1, 2, 80},
+        {2, 3, 150},
+        {2, 4, 300}
+    };
+
+    void setGraphicsWidgets();
+
+    void setSettingsGPU(const gpus_info_list_t &gpus_info);
+
+    void loadGraphicsSettings(QString file_name);
+
+    void updateGraphSettings(FieldsDataList &fd_list,
+                             Ui::SettingsWidgets *settings_ui);
+
+    void applyGraphSettings(FieldsDataList &fd_list,
+                            Ui::SettingsWidgets *settings_ui);
+
+    void saveGraphSettings(FieldsDataList &fd_list);
+
+    void setDefaultSettingsForChangedGPU(int gpu_idx);
+
+    void ulockShadowsSettings(Ui::SettingsWidgets *settings_ui, bool lock);
+
+    void showSettingsTab();
+
+    void slotOnSettingsGPUChanged(int idx);
+
+    void slotApplyGraphSettings();
+
+    void slotCancelGraphSettings();
 };
 
 #endif // MAINWINDOW_H

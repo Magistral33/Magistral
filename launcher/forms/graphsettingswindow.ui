@@ -1,10 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GraphSettingsWindow</class>
- <widget class="QMainWindow" name="GraphSettingsWindow">
-  <property name="windowModality">
-   <enum>Qt::WindowModal</enum>
-  </property>
+ <class>SettingsWidgets</class>
+ <widget class="QWidget" name="SettingsWidgets">
   <property name="geometry">
    <rect>
     <x>0</x>
