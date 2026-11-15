@@ -259,15 +259,15 @@ void MainWindow::setGraphicsWidgets()
     connect(settings_ui->cbListGPU, &QComboBox::currentIndexChanged,
             this, &MainWindow::slotOnSettingsGPUChanged);
 
-    settings_ui->cbSwadowsQuality->addItem(tr("Low"));
-    settings_ui->cbSwadowsQuality->addItem(tr("Medium"));
-    settings_ui->cbSwadowsQuality->addItem(tr("High"));
-    settings_ui->cbSwadowsQuality->addItem(tr("Ultra"));
-    settings_ui->cbSwadowsQuality->addItem(tr("Custom"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Низкое"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Среднее"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Высокое"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Очень высокое"));
+    settings_ui->cbSwadowsQuality->addItem(tr("Настраиваемое"));
 
-    settings_ui->cbShadowsMap->addItem(tr("Low"));
-    settings_ui->cbShadowsMap->addItem(tr("Medium"));
-    settings_ui->cbShadowsMap->addItem(tr("High"));
+    settings_ui->cbShadowsMap->addItem(tr("1024"));
+    settings_ui->cbShadowsMap->addItem(tr("2048"));
+    settings_ui->cbShadowsMap->addItem(tr("4096"));
 
     connect(settings_ui->cbSwadowsQuality, &QComboBox::currentIndexChanged, this, [this, settings_ui](int idx){
 
@@ -322,13 +322,16 @@ void MainWindow::setGraphicsWidgets()
         }
     });
 
-    connect(settingsWindow->getUi()->pbGraphApply, &QPushButton::released,
-            this, &MainWindow::slotApplyGraphSettings);
-
-    connect(settingsWindow->getUi()->pbGraphCancel, &QPushButton::released,
-            this, &MainWindow::slotCancelGraphSettings);
-
     // настройки перечитываются каждый раз, когда открывают вкладку
+    // стартовые значения, чтобы вкладка не была пустой до чтения настроек
+    settings_ui->sbWindowWidth->setRange(320, 10000);
+    settings_ui->sbWindowHeight->setRange(240, 10000);
+    settings_ui->sbMaxFPS->setRange(1, 1000);
+    settings_ui->sbDisplayNumber->setRange(0, 8);
+    settings_ui->hsMSAA->setRange(0, 3);
+
+    settings_ui->pbGraphApply->setEnabled(false);
+
     connect(ui->twMain, &QTabWidget::currentChanged, this, [this, settings_ui](int idx)
     {
         if (idx == ui->twMain->indexOf(ui->tab_settings))
@@ -362,6 +365,15 @@ void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
         return;
     }
 
+    // список уже заполнен — второй раз не дублируем
+    if (settings_ui->cbListGPU->count() == static_cast<int>(gpus_info.size()))
+    {
+        return;
+    }
+
+    settings_ui->cbListGPU->blockSignals(true);
+    settings_ui->cbListGPU->clear();
+
     // Выбираем самый производительный GPU из найденных в качестве текущего
     int max_score = 0;
     int best_gpu_idx = -1;
@@ -376,8 +388,10 @@ void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
             best_gpu_idx = i;
         }
 
-        settings_ui->cbListGPU->addItem(gpu_info.deviceName);        
-    }    
+        settings_ui->cbListGPU->addItem(gpu_info.deviceName);
+    }
+
+    settings_ui->cbListGPU->blockSignals(false);
 
     // Если видюха еще не настраивалась никогда
     if (current_gpu_idx == -1)
@@ -738,6 +752,13 @@ void MainWindow::showSettingsTab()
 {
     // при каждом показе вкладки перечитываем настройки с диска
     loadGraphicsSettings("settings");
+
+    // список видеокарт может быть ещё не заполнен (проверка Vulkan
+    // не выполнялась) — тогда заполняем его здесь
+    if (settingsWindow != nullptr && !gpus_info.empty())
+    {
+        setSettingsGPU(gpus_info);
+    }
 }
 
 //------------------------------------------------------------------------------
