@@ -81,10 +81,10 @@
           </size>
          </property>
          <property name="pixmap">
-          <pixmap resource="launcher.qrc">:/images/images/RRS_logo.png</pixmap>
+          <pixmap resource="launcher.qrc">:/images/images/MAGISTRAL_logo_52.png</pixmap>
          </property>
          <property name="scaledContents">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
         </widget>
        </item>

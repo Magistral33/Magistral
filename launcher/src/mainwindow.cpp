@@ -144,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     loadConfig();
 
-    QIcon icon(":/images/images/RRS_logo.png");
+    QIcon icon(":/images/images/MAGISTRAL_logo.png");
     setWindowIcon(icon);
 
     QTimeZone local_zone = QTimeZone::systemTimeZone();
