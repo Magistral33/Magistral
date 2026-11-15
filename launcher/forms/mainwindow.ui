@@ -151,7 +151,7 @@
          <number>16</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="topRow" stretch="3,3,4">
+         <layout class="QHBoxLayout" name="topRow" stretch="1,1,1">
           <property name="spacing">
            <number>12</number>
           </property>
@@ -162,19 +162,19 @@
             </property>
             <layout class="QVBoxLayout" name="routeLayout">
              <property name="spacing">
-              <number>8</number>
+              <number>10</number>
              </property>
              <property name="leftMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <property name="topMargin">
-              <number>20</number>
+              <number>22</number>
              </property>
              <property name="rightMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <property name="bottomMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <item>
               <widget class="QListWidget" name="lwRoutes">
@@ -225,19 +225,19 @@
             </property>
             <layout class="QVBoxLayout" name="trainLayout">
              <property name="spacing">
-              <number>8</number>
+              <number>10</number>
              </property>
              <property name="leftMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <property name="topMargin">
-              <number>20</number>
+              <number>22</number>
              </property>
              <property name="rightMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <property name="bottomMargin">
-              <number>12</number>
+              <number>14</number>
              </property>
              <item>
               <widget class="QListWidget" name="lwTrains">
@@ -293,24 +293,24 @@
               </property>
               <layout class="QVBoxLayout" name="scenarioLayout">
                <property name="spacing">
-                <number>8</number>
+                <number>10</number>
                </property>
                <property name="leftMargin">
-                <number>12</number>
+                <number>14</number>
                </property>
                <property name="topMargin">
-                <number>20</number>
+                <number>22</number>
                </property>
                <property name="rightMargin">
-                <number>12</number>
+                <number>14</number>
                </property>
                <property name="bottomMargin">
-                <number>12</number>
+                <number>14</number>
                </property>
                <item>
                 <layout class="QHBoxLayout" name="scenarioSelectLayout">
                  <property name="spacing">
-                  <number>8</number>
+                  <number>10</number>
                  </property>
                  <item>
                   <widget class="QComboBox" name="cbScenario">
@@ -352,24 +352,21 @@
             </item>
             <item>
              <widget class="QGroupBox" name="gbTrainPhoto">
-              <property name="title">
-               <string>Подвижной состав</string>
-              </property>
-              <layout class="QVBoxLayout" name="trainPhotoLayout">
+              <layout class="QVBoxLayout" name="trainPhotoLayout" stretch="1,0,0">
                <property name="spacing">
                 <number>0</number>
                </property>
                <property name="leftMargin">
-                <number>12</number>
+                <number>14</number>
                </property>
                <property name="topMargin">
-                <number>22</number>
+                <number>16</number>
                </property>
                <property name="rightMargin">
-                <number>12</number>
+                <number>14</number>
                </property>
                <property name="bottomMargin">
-                <number>8</number>
+                <number>14</number>
                </property>
                <item>
                 <widget class="QLabel" name="lblTrainPhoto">
@@ -412,7 +409,7 @@
                <item>
                 <layout class="QVBoxLayout" name="vblActiveTrainsLayout">
                  <property name="spacing">
-                  <number>6</number>
+                  <number>0</number>
                  </property>
                 </layout>
                </item>

@@ -209,9 +209,8 @@ void MainWindow::updateTrainPhoto()
         return;
     }
 
+    // картинка масштабируется и центрируется в карточке (alignment в .ui)
     QPixmap scaled = source.scaled(area, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    photo->setMinimumHeight(scaled.height());
-    photo->setMaximumHeight(scaled.height());
     photo->setPixmap(scaled);
 }
 
