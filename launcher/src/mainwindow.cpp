@@ -565,6 +565,10 @@ void MainWindow::loadGraphicsSettings(QString file_name)
 //------------------------------------------------------------------------------
 void MainWindow::ulockShadowsSettings(Ui::SettingsWidgets *settings_ui, bool lock)
 {
+    // Сам список качества не блокируется никогда: он должен оставаться
+    // рабочим, даже если настройки теней загрузились с ошибкой
+    settings_ui->cbSwadowsQuality->setEnabled(true);
+
     settings_ui->cbShadowsMap->setEnabled(lock);
     settings_ui->hsShadowsCascades->setEnabled(lock);
     settings_ui->hsShadowsDistance->setEnabled(lock);
