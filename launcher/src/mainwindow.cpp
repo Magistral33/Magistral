@@ -70,20 +70,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(ui->lwTrains, &QListWidget::itemSelectionChanged,
             this, &MainWindow::slotTrainSelection);
 
-    connect(ui->cbStartDateManually, &QCheckBox::stateChanged,
-            this, &MainWindow::slotStartDateManuallyChanged);
-
-    connect(ui->cbStartTimeManually, &QCheckBox::stateChanged,
-            this, &MainWindow::slotStartTimeManuallyChanged);
-
     connect(ui->pbStartServer, &QPushButton::pressed,
             this, &MainWindow::slotStartServerPressed);
-
-    connect(ui->pbStartViewer, &QPushButton::pressed,
-            this, &MainWindow::slotStartViewerPressed);
-
-    connect(ui->pbStartMap, &QPushButton::pressed,
-            this, &MainWindow::slotStartMapPressed);
 
     connect(&simulatorProc, &QProcess::started,
             this, &MainWindow::slotSimulatorStarted);
@@ -146,23 +134,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     QIcon icon(":/images/images/MAGISTRAL_logo.png");
     setWindowIcon(icon);
-
-    QTimeZone local_zone = QTimeZone::systemTimeZone();
-    QDateTime current = QDateTime::currentDateTime(local_zone);
-    ui->dteStartDate->setDateTime(current);
-    ui->dteStartDate->setTimeZone(local_zone);
-    ui->dteStartTime->setDateTime(current);
-    ui->dteStartTime->setTimeZone(local_zone);
-    connect(&update_datetime_timer, &QTimer::timeout, this, &MainWindow::slotUpdateDateTime);
-    update_datetime_timer.start(300);
-
-    ui->dteStartDate->setEnabled(false);
-    ui->dteStartTime->setEnabled(false);
     ui->pbAddTrain->setEnabled(false);
-    ui->pbDeleteTrain->setEnabled(false);
-    ui->pbStartViewer->setEnabled(false);
-    ui->pbStartMap->setEnabled(false);
-    ui->pbStartServer->setEnabled(false);
+    ui->pbDeleteTrain->setEnabled(false);    ui->pbStartServer->setEnabled(false);
     is_start_button_to_stop_server = false;
 
     // В строке меню оставляем только «Настройки» и «Помощь». Меню
@@ -198,16 +171,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createToolsMenu();
 
     createHelpMenu();
-
-    connect(ui->cbAutostartViewer, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState){
-        applyOptions(fd_options, ui);
-        saveOptions(fd_options);
-    });
-
-    connect(ui->cbAutostartMap, &QCheckBox::checkStateChanged, this, [this](Qt::CheckState){
-        applyOptions(fd_options, ui);
-        saveOptions(fd_options);
-    });
 }
 
 //------------------------------------------------------------------------------
@@ -847,28 +810,13 @@ void MainWindow::centerWindow(QWidget *window)
 //
 //------------------------------------------------------------------------------
 void MainWindow::updateOptions(FieldsDataList &fd_options)
-{
-    findSetting(AUTO_START_VIEWER, fd_options).second.toBool() ?
-        ui->cbAutostartViewer->setCheckState(Qt::CheckState::Checked) :
-        ui->cbAutostartViewer->setCheckState(Qt::CheckState::Unchecked);
-
-    findSetting(AUTO_START_ROUTE_MAP, fd_options).second.toBool() ?
-        ui->cbAutostartMap->setCheckState(Qt::CheckState::Checked) :
-        ui->cbAutostartMap->setCheckState(Qt::CheckState::Unchecked);
-}
+{}
 
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 void MainWindow::applyOptions(FieldsDataList &fd_options, Ui::MainWindow *ui)
-{
-    int idx = 0;
-    findSetting(AUTO_START_VIEWER, fd_options, idx);
-    fd_options[idx] = QPair<QString, QVariant>(AUTO_START_VIEWER, static_cast<int>(ui->cbAutostartViewer->checkState() == Qt::CheckState::Checked));
-
-    findSetting(AUTO_START_ROUTE_MAP, fd_options, idx);
-    fd_options[idx] = QPair<QString, QVariant>(AUTO_START_ROUTE_MAP, static_cast<int>(ui->cbAutostartMap->checkState() == Qt::CheckState::Checked));
-}
+{}
 
 //------------------------------------------------------------------------------
 //
@@ -920,15 +868,19 @@ void MainWindow::startSimulator()
 
     args << "--route=" + selectedRouteDirName;
 
+    // Текущий момент: если выбран сценарий, время и погода задаются им
+    QDateTime start_datetime_now = QDateTime::currentDateTime(QTimeZone::systemTimeZone());
+    QDate start_date_now = start_datetime_now.date();
+    QTime start_time_now = start_datetime_now.time();
     server_date_t start_date = server_date_t(
-        static_cast<int16_t>(ui->dteStartDate->dateTime().date().year()),
-        static_cast<uint8_t>(ui->dteStartDate->dateTime().date().month()),
-        static_cast<uint8_t>(ui->dteStartDate->dateTime().date().day()));
+        static_cast<int16_t>(start_date_now.year()),
+        static_cast<uint8_t>(start_date_now.month()),
+        static_cast<uint8_t>(start_date_now.day()));
     server_time_t start_time = server_time_t(
-        static_cast<uint8_t>(ui->dteStartTime->dateTime().time().hour()),
-        static_cast<uint8_t>(ui->dteStartTime->dateTime().time().minute()),
-        static_cast<uint8_t>(ui->dteStartTime->dateTime().time().second()),
-        static_cast<uint16_t>(ui->dteStartTime->dateTime().time().msec()));
+        static_cast<uint8_t>(start_time_now.hour()),
+        static_cast<uint8_t>(start_time_now.minute()),
+        static_cast<uint8_t>(start_time_now.second()),
+        static_cast<uint16_t>(start_time_now.msec()));
     std::int64_t start_datetime = simulator_time_t(start_date, start_time).data();
 
     args << "--start=" + QString::number(start_datetime);
@@ -1100,14 +1052,6 @@ void MainWindow::loadConfig()
         cfg.getInt(secName, "MinWinBuild_INTEL", winver.buildIntel);
 
         settings_path = QString(cfg_path.c_str());
-
-        bool is_auto_start_viewer = false;
-        cfg.getBool(secName, AUTO_START_VIEWER, is_auto_start_viewer);
-        fd_options.append(QPair<QString, QVariant>(AUTO_START_VIEWER, is_auto_start_viewer));
-
-        bool is_auto_start_route_map = false;
-        cfg.getBool(secName, AUTO_START_ROUTE_MAP, is_auto_start_route_map);
-        fd_options.append(QPair<QString, QVariant>(AUTO_START_ROUTE_MAP, is_auto_start_route_map));
 
         updateOptions(fd_options);
     }
@@ -1294,36 +1238,6 @@ void MainWindow::slotUpdateActiveTrains(bool reset_start_config)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void MainWindow::slotStartDateManuallyChanged()
-{
-    ui->dteStartDate->setEnabled(ui->cbStartDateManually->isChecked());
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-void MainWindow::slotStartTimeManuallyChanged()
-{
-    ui->dteStartTime->setEnabled(ui->cbStartTimeManually->isChecked());
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-void MainWindow::slotUpdateDateTime()
-{
-    QDateTime current = QDateTime::currentDateTime(QTimeZone::systemTimeZone());
-
-    if (!ui->cbStartDateManually->isChecked())
-        ui->dteStartDate->setDateTime(current);
-
-    if (!ui->cbStartTimeManually->isChecked())
-        ui->dteStartTime->setDateTime(current);
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
 void MainWindow::slotStartServerPressed()
 {
     // Check button is stop running server mode
@@ -1345,22 +1259,6 @@ void MainWindow::slotStartServerPressed()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void MainWindow::slotStartViewerPressed()
-{
-    startViewer();
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-void MainWindow::slotStartMapPressed()
-{
-    startMap();
-}
-
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
 void MainWindow::slotSimulatorStarted()
 {
     is_start_button_to_stop_server = true;
@@ -1369,32 +1267,22 @@ void MainWindow::slotSimulatorStarted()
     ui->pbStartServer->setText(tr("Stop server"));
     ui->pbStartServer->setEnabled(true);
 
-    if (ui->cbAutostartViewer->isChecked())
-        startViewer();
-    else
-        ui->pbStartViewer->setEnabled(true);
-
-    if (ui->cbAutostartMap->isChecked())
-        startMap();
-    else
-        ui->pbStartMap->setEnabled(true);
+    // Просмотрщик и карта запускаются всегда автоматически
+    startViewer();
+    startMap();
 }
 
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 void MainWindow::slotViewerStarted()
-{
-    ui->pbStartViewer->setEnabled(false);
-}
+{}
 
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
 void MainWindow::slotMapStarted()
-{
-    ui->pbStartMap->setEnabled(false);
-}
+{}
 
 //------------------------------------------------------------------------------
 //
@@ -1440,10 +1328,6 @@ void MainWindow::slotSimulatorFinished(int exitCode, QProcess::ExitStatus exitSt
     {
         ui->pbStartServer->setEnabled(true);
     }
-
-    ui->pbStartViewer->setEnabled(false);
-    ui->pbStartMap->setEnabled(false);
-
     if (viewerProc.state() != QProcess::NotRunning)
        terminateProcess(&viewerProc);
 
@@ -1460,10 +1344,7 @@ void MainWindow::slotViewerFinished(int exitCode, QProcess::ExitStatus exitStatu
     Q_UNUSED(exitStatus)
 
     if (simulatorProc.state() != QProcess::NotRunning)
-        ui->pbStartViewer->setEnabled(true);
-
-    //simulatorProc.kill();
-    setFocusPolicy(Qt::StrongFocus);
+        setFocusPolicy(Qt::StrongFocus);
 }
 
 //------------------------------------------------------------------------------
@@ -1475,7 +1356,7 @@ void MainWindow::slotMapFinished(int exitCode, QProcess::ExitStatus exitStatus)
     Q_UNUSED(exitStatus)
 
     if (simulatorProc.state() != QProcess::NotRunning)
-        ui->pbStartMap->setEnabled(true);
+        setFocusPolicy(Qt::StrongFocus);
 }
 
 //------------------------------------------------------------------------------
@@ -1640,13 +1521,6 @@ void MainWindow::slotSaveTrainsConfigAsScenario()
 
     QStringList scnCode;
     scnCode.clear();
-
-    if (ui->ckbSaveDateTime->isChecked())
-    {
-        scnCode.append(createLuaSetDate(ui->dteStartDate));
-        scnCode.append(createLuaSetTime(ui->dteStartTime));
-        scnCode.append("\n");
-    }
 
     slotUpdateActiveTrains();
 

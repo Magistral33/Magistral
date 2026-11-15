@@ -108,7 +108,6 @@ private:
     QIcon icon_cancel = QIcon(QString(":/images/images/2_cancel.png"));
     QIcon icon_warn = QIcon(QString(":/images/images/3_warn.png"));
 
-    QTimer update_datetime_timer;
 
     /// Launcer initialization
     void init();
@@ -242,17 +241,12 @@ private slots:
 
     void slotUpdateActiveTrains(bool reset_start_config = true);
 
-    void slotStartDateManuallyChanged();
 
-    void slotStartTimeManuallyChanged();
 
-    void slotUpdateDateTime();
 
     void slotStartServerPressed();
 
-    void slotStartViewerPressed();
 
-    void slotStartMapPressed();
 
     void slotSimulatorStarted();
 
@@ -282,6 +276,5 @@ private slots:
 
     void slotSaveTrainsConfigAsScenario();   
 };
-
 
 #endif // MAINWINDOW_H
