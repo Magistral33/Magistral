@@ -549,56 +549,6 @@ QToolBox::tab:selected
     color: #FFFFFF;
 }
 
-/* ---- menus ------------------------------------------------------------- */
-
-QMenuBar
-{
-    background-color: #15181E;
-    border-bottom: 1px solid #23272F;
-    padding: 2px 6px;
-}
-
-QMenuBar::item
-{
-    background: transparent;
-    padding: 5px 12px;
-    border-radius: 6px;
-}
-
-QMenuBar::item:selected
-{
-    background-color: #222833;
-}
-
-QMenu
-{
-    background-color: #171B21;
-    border: 1px solid #333A46;
-    border-radius: 8px;
-    padding: 6px;
-}
-
-QMenu::item
-{
-    background: transparent;
-    padding: 7px 26px 7px 14px;
-    border-radius: 6px;
-    color: #E6E9EF;
-}
-
-QMenu::item:selected
-{
-    background-color: #E2231A;
-    color: #FFFFFF;
-}
-
-QMenu::separator
-{
-    height: 1px;
-    background-color: #2A2F39;
-    margin: 6px 8px;
-}
-
 /* ---- scroll bars ------------------------------------------------------- */
 
 QScrollBar:vertical

@@ -165,6 +165,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->pbStartServer->setEnabled(false);
     is_start_button_to_stop_server = false;
 
+    // В строке меню оставляем только «Настройки» и «Помощь». Меню
+    // «Инструменты» появится, только если в cfg/launcher.xml есть <Tool>,
+    // иначе пустой пункт не должен занимать место в строке меню.
+    bool has_tools = !ui->menuTools->actions().isEmpty();
+    ui->menuTools->menuAction()->setVisible(has_tools);
+
     connect(ui->cbScenario, &QComboBox::currentIndexChanged, this, &MainWindow::slotOnScenarioSelection);
 
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
@@ -806,6 +812,9 @@ void MainWindow::createToolsMenu()
         });
 
         ui->menuTools->addAction(action);
+
+        // Меню инструментов появляется с первым загруженным инструментом
+        ui->menuTools->menuAction()->setVisible(true);
 
         secNode = cfg.getNextSection();
     }

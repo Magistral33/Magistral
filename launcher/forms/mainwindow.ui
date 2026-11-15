@@ -1128,7 +1128,6 @@
      <string>Tools</string>
     </property>
    </widget>
-   <addaction name="menuTools"/>
    <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
