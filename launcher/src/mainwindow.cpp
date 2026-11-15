@@ -265,9 +265,10 @@ void MainWindow::setGraphicsWidgets()
     settings_ui->cbSwadowsQuality->addItem(tr("Очень высокое"));
     settings_ui->cbSwadowsQuality->addItem(tr("Настраиваемое"));
 
-    settings_ui->cbShadowsMap->addItem(tr("1024"));
-    settings_ui->cbShadowsMap->addItem(tr("2048"));
-    settings_ui->cbShadowsMap->addItem(tr("4096"));
+    for (uint32_t resolution : shadowMapResolution)
+    {
+        settings_ui->cbShadowsMap->addItem(QString::number(resolution));
+    }
 
     settings_ui->cbSwadowsQuality->setCurrentIndex(1);
     settings_ui->cbShadowsMap->setCurrentIndex(1);
@@ -607,9 +608,13 @@ void MainWindow::updateGraphSettings(FieldsDataList &fd_list, Ui::SettingsWidget
 
     int shadows_preset = findSetting(SHADOWS_PRESET, fd_list).second.toInt();
 
-    if (shadows_preset > 0 && shadows_preset < settings_ui->cbSwadowsQuality->count())
+    if (shadows_preset >= 0 && shadows_preset < settings_ui->cbSwadowsQuality->count())
     {
         settings_ui->cbSwadowsQuality->setCurrentIndex(shadows_preset);
+    }
+    else if (settings_ui->cbSwadowsQuality->count() > 0)
+    {
+        settings_ui->cbSwadowsQuality->setCurrentIndex(0);
     }
 
     if (shadows_preset >= shadowsPresets.size())
@@ -621,11 +626,12 @@ void MainWindow::updateGraphSettings(FieldsDataList &fd_list, Ui::SettingsWidget
         ulockShadowsSettings(settings_ui, false);
     }
 
-    for (size_t i = 0; i < shadowMapResolution.size(); ++i)
+    for (size_t i = 0; i < shadowMapResolution.size() &&
+                        i < static_cast<size_t>(settings_ui->cbShadowsMap->count()); ++i)
     {
         if (shadowMapResolution[i] == findSetting(SHADOW_RESOLUTION, fd_list).second.toInt())
         {
-            settings_ui->cbShadowsMap->setCurrentIndex(i);
+            settings_ui->cbShadowsMap->setCurrentIndex(static_cast<int>(i));
         }
     }
 
@@ -744,17 +750,20 @@ void MainWindow::showSettingsTab()
 
     Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
 
-    // Индекс пресета мог прийти из настроек невалидным — тогда ставим
-    // «Среднее», чтобы поле не оставалось пустым
+    // Поле «Качество теней» не должно оставаться пустым: если индекс
+    // невалиден или пуст — ставим «Среднее». То же для карты теней.
     if (settings_ui->cbSwadowsQuality->currentIndex() < 0)
     {
-        settings_ui->cbSwadowsQuality->setCurrentIndex(1);
+        settings_ui->cbSwadowsQuality->setCurrentIndex(
+            settings_ui->cbSwadowsQuality->count() > 1 ? 1 : 0);
     }
 
     if (settings_ui->cbShadowsMap->currentIndex() < 0)
     {
-        settings_ui->cbShadowsMap->setCurrentIndex(1);
+        settings_ui->cbShadowsMap->setCurrentIndex(
+            settings_ui->cbShadowsMap->count() > 1 ? 1 : 0);
     }
+
 
     settings_ui->pbGraphApply->setEnabled(false);
 
