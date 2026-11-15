@@ -274,6 +274,13 @@ private slots:
 
     void slotOnScenarioSelection(int cur_idx);
 
+    /// Вписывает фото состава в свободную область карточки
+    void updateTrainPhoto();
+
+    void resizeEvent(QResizeEvent *event) override;
+
+    void showEvent(QShowEvent *event) override;
+
     void slotSaveTrainsConfigAsScenario();   
 };
 

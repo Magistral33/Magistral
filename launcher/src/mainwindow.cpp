@@ -120,10 +120,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     connect(ui->pbSaveServer, &QPushButton::pressed,
             this, &MainWindow::slotSaveServer);    
-
-    connect(ui->pbAddTrain, &QPushButton::released, this, &MainWindow::slotAddActiveTrain);
-    connect(ui->pbDeleteTrain, &QPushButton::released, this, &MainWindow::slotDeleteActiveTrain);
-
     connect(ui->pbSaveAsScenario, &QPushButton::released, this, &MainWindow::slotSaveTrainsConfigAsScenario);
 
     setFocusPolicy(Qt::ClickFocus);
@@ -134,8 +130,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     QIcon icon(":/images/images/MAGISTRAL_logo.png");
     setWindowIcon(icon);
-    ui->pbAddTrain->setEnabled(false);
-    ui->pbDeleteTrain->setEnabled(false);    ui->pbStartServer->setEnabled(false);
+
+    ui->pbStartServer->setEnabled(false);
     is_start_button_to_stop_server = false;
 
     // В строке меню оставляем только «Настройки» и «Помощь». Меню
@@ -145,6 +141,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->menuTools->menuAction()->setVisible(has_tools);
 
     connect(ui->cbScenario, &QComboBox::currentIndexChanged, this, &MainWindow::slotOnScenarioSelection);
+
+    // Фото состава: картинка вписывается в свободную область карточки
+    // с сохранением пропорций, исходный файл не меняется
+    updateTrainPhoto();
 
     ui->tbScenarioDescription->setTextInteractionFlags(Qt::NoTextInteraction);
     ui->tbScenarioDescription->setFocusPolicy(Qt::NoFocus);
@@ -171,6 +171,66 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createToolsMenu();
 
     createHelpMenu();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::updateTrainPhoto()
+{
+    QLabel *photo = ui->lblTrainPhoto;
+    const QPixmap source(":/images/images/magnistral_train.png");
+
+    if (photo == nullptr || source.isNull())
+    {
+        return;
+    }
+
+    QWidget *card = photo->parentWidget();
+
+    // Область под фото: карточка минус заголовок, отступы и место
+    // под активными поездами (когда они есть)
+    QRect card_rect = card->contentsRect();
+
+    // ширина и высота — по фактическому размеру карточки: фото вписывается
+    // целиком, с сохранением пропорций (исходник не меняется)
+    int area_w = card_rect.width() - 24;
+    int area_h = card_rect.height() - 40;
+
+    if (ui->vblActiveTrainsLayout->count() > 0)
+    {
+        area_h -= ui->vblActiveTrainsLayout->minimumSize().height() + 12;
+    }
+
+    QSize area(area_w, area_h);
+
+    if (area.width() < 32 || area.height() < 32)
+    {
+        return;
+    }
+
+    QPixmap scaled = source.scaled(area, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    photo->setMinimumHeight(scaled.height());
+    photo->setMaximumHeight(scaled.height());
+    photo->setPixmap(scaled);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    updateTrainPhoto();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    updateTrainPhoto();
 }
 
 //------------------------------------------------------------------------------
@@ -453,7 +513,7 @@ void MainWindow::clearActiveTrainsList()
     if (!is_start_button_to_stop_server)
         ui->pbStartServer->setEnabled(false);
 
-    ui->pbDeleteTrain->setEnabled(false);
+
 
     active_trains.clear();
 
@@ -1087,7 +1147,7 @@ void MainWindow::slotRouteSelection()
     selected_route_idx = route_idx;
     loadActiveTrainsList();
 
-    ui->pbAddTrain->setEnabled(true);
+
 }
 
 //------------------------------------------------------------------------------
@@ -1101,7 +1161,7 @@ void MainWindow::slotTrainSelection()
     selectedTrain = trains_info[item_idx].train_config_path;
     ui->ptTrainDescription->appendPlainText(trains_info[item_idx].description);
 
-    ui->pbAddTrain->setEnabled(ui->lwRoutes->currentRow() >= 0);
+
 }
 
 //------------------------------------------------------------------------------
@@ -1205,13 +1265,13 @@ void MainWindow::slotUpdateActiveTrains(bool reset_start_config)
         if (!is_start_button_to_stop_server)
             ui->pbStartServer->setEnabled(false);
 
-        ui->pbDeleteTrain->setEnabled(false);
+
         ui->cbScenario->setEnabled(true);
 
         return;
     }
 
-    ui->pbDeleteTrain->setEnabled(true);
+
 
     for (int i = 0; i < active_trains_count; ++i)
     {
@@ -1494,7 +1554,7 @@ void MainWindow::slotOnScenarioSelection(int cur_idx)
     {
         ui->pbStartServer->setEnabled(false);
         hideTrainsConfigsTip();
-        ui->pbAddTrain->setEnabled(true);
+
         return;
     }
 
@@ -1506,7 +1566,7 @@ void MainWindow::slotOnScenarioSelection(int cur_idx)
     ui->pbStartServer->setEnabled(true);
 
     showTrainsConfigTip();
-    ui->pbAddTrain->setEnabled(false);
+
 }
 
 //------------------------------------------------------------------------------
