@@ -838,12 +838,12 @@
          <number>18</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="settingsColumns">
+         <layout class="QHBoxLayout" name="settingsColumns" stretch="1,1,1">
           <property name="spacing">
            <number>14</number>
           </property>
           <item>
-           <layout class="QVBoxLayout" name="settingsLeftColumn">
+           <layout class="QVBoxLayout" name="settingsColumn1">
             <property name="spacing">
              <number>14</number>
             </property>
@@ -897,10 +897,23 @@
                   </widget>
                  </item>
                  <item>
+                  <spacer name="windowSizeSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
                   <widget class="QSpinBox" name="sbWindowWidth">
                    <property name="minimumSize">
                     <size>
-                     <width>110</width>
+                     <width>90</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -913,7 +926,7 @@
                   <widget class="QSpinBox" name="sbWindowHeight">
                    <property name="minimumSize">
                     <size>
-                     <width>110</width>
+                     <width>90</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -921,19 +934,6 @@
                     <number>10000</number>
                    </property>
                   </widget>
-                 </item>
-                 <item>
-                  <spacer name="windowSizeSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
                  </item>
                 </layout>
                </item>
@@ -985,58 +985,11 @@
                  </item>
                 </layout>
                </item>
-               <item>
-                <widget class="QCheckBox" name="cbLimitFPS">
-                 <property name="text">
-                  <string>Ограничить частоту кадров</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="maxFPSLayout">
-                 <property name="spacing">
-                  <number>8</number>
-                 </property>
-                 <item>
-                  <widget class="QLabel" name="label_fps">
-                   <property name="text">
-                    <string>Предел FPS</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="maxFPSSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QSpinBox" name="sbMaxFPS">
-                   <property name="maximum">
-                    <number>1000</number>
-                   </property>
-                   <property name="singleStep">
-                    <number>10</number>
-                   </property>
-                   <property name="value">
-                    <number>60</number>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
               </layout>
              </widget>
             </item>
             <item>
-             <spacer name="leftColumnSpacer">
+             <spacer name="column1Spacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -1051,7 +1004,7 @@
            </layout>
           </item>
           <item>
-           <layout class="QVBoxLayout" name="settingsRightColumn">
+           <layout class="QVBoxLayout" name="settingsColumn2">
             <property name="spacing">
              <number>14</number>
             </property>
@@ -1118,6 +1071,68 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_5">
+              <property name="title">
+               <string>Частота кадров</string>
+              </property>
+              <layout class="QVBoxLayout" name="fpsLayout">
+               <property name="spacing">
+                <number>10</number>
+               </property>
+               <property name="topMargin">
+                <number>26</number>
+               </property>
+               <item>
+                <widget class="QCheckBox" name="cbLimitFPS">
+                 <property name="text">
+                  <string>Ограничить частоту кадров</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="maxFPSLayout">
+                 <property name="spacing">
+                  <number>8</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_fps">
+                   <property name="text">
+                    <string>Предел FPS</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="maxFPSSpacer">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="sbMaxFPS">
+                   <property name="maximum">
+                    <number>1000</number>
+                   </property>
+                   <property name="singleStep">
+                    <number>10</number>
+                   </property>
+                   <property name="value">
+                    <number>60</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
                <string>Настройки обзора</string>
@@ -1155,7 +1170,7 @@
                   <widget class="QSpinBox" name="sbViewDistance">
                    <property name="minimumSize">
                     <size>
-                     <width>120</width>
+                     <width>110</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -1179,13 +1194,33 @@
              </widget>
             </item>
             <item>
+             <spacer name="column2Spacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="settingsColumn3">
+            <property name="spacing">
+             <number>14</number>
+            </property>
+            <item>
              <widget class="QGroupBox" name="groupBox_6">
               <property name="title">
                <string>Тени</string>
               </property>
               <layout class="QVBoxLayout" name="shadowsLayout">
                <property name="spacing">
-                <number>8</number>
+                <number>10</number>
                </property>
                <property name="topMargin">
                 <number>26</number>
@@ -1202,6 +1237,9 @@
                  <property name="text">
                   <string>Качество теней</string>
                  </property>
+                 <property name="role" stdset="0">
+                  <string>caption</string>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -1215,6 +1253,9 @@
                 <widget class="QLabel" name="label_shmap">
                  <property name="text">
                   <string>Разрешение карты теней</string>
+                 </property>
+                 <property name="role" stdset="0">
+                  <string>caption</string>
                  </property>
                 </widget>
                </item>
@@ -1335,7 +1376,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="rightColumnSpacer">
+             <spacer name="column3Spacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
