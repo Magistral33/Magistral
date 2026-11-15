@@ -92,19 +92,25 @@ QGroupBox
     background-color: #15181E;
     border: 1px solid #23272F;
     border-radius: 10px;
-    font-weight: 600;
-    color: #C9D1DC;
+    font-weight: 700;
+    font-size: 10.5pt;
+    color: #EDF1F7;
 }
 
+/* заголовок карточки: жирный, начинается там же, где содержимое
+   (14 px от края), с запасом сверху и снизу, чтобы буквы не липли
+   к рамке и к списку внутри */
 QGroupBox::title
 {
     subcontrol-origin: margin;
     subcontrol-position: top left;
-    left: 14px;
-    top: 5px;
+    left: 10px;
+    top: 4px;
     padding: 0 4px;
     background: transparent;
-    color: #C9D1DC;
+    color: #EDF1F7;
+    font-size: 10.5pt;
+    font-weight: 700;
 }
 
 QLabel[role="caption"]
