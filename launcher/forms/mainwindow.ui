@@ -819,7 +819,7 @@
       </widget>
 <widget class="QWidget" name="tab_settings">
        <attribute name="title">
-        <string>Settings</string>
+        <string>Настройки</string>
        </attribute>
        <layout class="QVBoxLayout" name="settingsLayout">
         <property name="spacing">
@@ -850,7 +850,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
-               <string>Current GPU</string>
+               <string>Текущий графический ускоритель</string>
               </property>
               <layout class="QVBoxLayout" name="gpuLayout">
                <property name="topMargin">
@@ -875,7 +875,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_2">
               <property name="title">
-               <string>Window settings</string>
+               <string>Настройки окна</string>
               </property>
               <layout class="QVBoxLayout" name="windowLayout">
                <property name="spacing">
@@ -892,7 +892,7 @@
                  <item>
                   <widget class="QLabel" name="label_size">
                    <property name="text">
-                    <string>Width x Height</string>
+                    <string>Ширина и высота</string>
                    </property>
                   </widget>
                  </item>
@@ -940,14 +940,14 @@
                <item>
                 <widget class="QCheckBox" name="cbFullScreenMode">
                  <property name="text">
-                  <string>Fullscreen</string>
+                  <string>Полноэкранный режим</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QCheckBox" name="cbWindowDecoration">
                  <property name="text">
-                  <string>Window decoration</string>
+                  <string>Рамка окна</string>
                  </property>
                 </widget>
                </item>
@@ -959,7 +959,7 @@
                  <item>
                   <widget class="QLabel" name="label_display">
                    <property name="text">
-                    <string>Display number</string>
+                    <string>Номер монитора</string>
                    </property>
                   </widget>
                  </item>
@@ -988,7 +988,7 @@
                <item>
                 <widget class="QCheckBox" name="cbLimitFPS">
                  <property name="text">
-                  <string>Limit FPS</string>
+                  <string>Ограничить частоту кадров</string>
                  </property>
                 </widget>
                </item>
@@ -1000,7 +1000,7 @@
                  <item>
                   <widget class="QLabel" name="label_fps">
                    <property name="text">
-                    <string>FPS limit</string>
+                    <string>Предел FPS</string>
                    </property>
                   </widget>
                  </item>
@@ -1058,7 +1058,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_4">
               <property name="title">
-               <string>Multisampling</string>
+               <string>Сглаживание</string>
               </property>
               <layout class="QVBoxLayout" name="msaaLayout">
                <property name="spacing">
@@ -1120,7 +1120,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_3">
               <property name="title">
-               <string>View settings</string>
+               <string>Настройки обзора</string>
               </property>
               <layout class="QVBoxLayout" name="viewLayout">
                <property name="spacing">
@@ -1134,7 +1134,7 @@
                  <item>
                   <widget class="QLabel" name="label_viewdist">
                    <property name="text">
-                    <string>View distance, m</string>
+                    <string>Дальность обзора, м</string>
                    </property>
                   </widget>
                  </item>
@@ -1181,7 +1181,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_6">
               <property name="title">
-               <string>Shadows</string>
+               <string>Тени</string>
               </property>
               <layout class="QVBoxLayout" name="shadowsLayout">
                <property name="spacing">
@@ -1193,14 +1193,14 @@
                <item>
                 <widget class="QCheckBox" name="cbShowShadows">
                  <property name="text">
-                  <string>Show shadows</string>
+                  <string>Отображать тени</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_shq">
                  <property name="text">
-                  <string>Shadows quality</string>
+                  <string>Качество теней</string>
                  </property>
                 </widget>
                </item>
@@ -1214,7 +1214,7 @@
                <item>
                 <widget class="QLabel" name="label_shmap">
                  <property name="text">
-                  <string>Shadow map resolution</string>
+                  <string>Разрешение карты теней</string>
                  </property>
                 </widget>
                </item>
@@ -1230,7 +1230,7 @@
                  <item>
                   <widget class="QLabel" name="label_cascades">
                    <property name="text">
-                    <string>Shadow cascades</string>
+                    <string>Каскады теней</string>
                    </property>
                   </widget>
                  </item>
@@ -1280,7 +1280,7 @@
                  <item>
                   <widget class="QLabel" name="label_shdist">
                    <property name="text">
-                    <string>Shadow distance, m</string>
+                    <string>Дальность теней, м</string>
                    </property>
                   </widget>
                  </item>
@@ -1378,7 +1378,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Apply</string>
+             <string>Применить</string>
             </property>
             <property name="primary" stdset="0">
              <bool>true</bool>
@@ -1394,7 +1394,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Cancel</string>
+             <string>Отмена</string>
             </property>
            </widget>
           </item>
