@@ -103,7 +103,7 @@
          <item>
           <widget class="QLabel" name="lblSubtitle">
            <property name="text">
-            <string>Лаунчер</string>
+            <string>Твоя железная дорога начинается здесь!</string>
            </property>
           </widget>
          </item>
