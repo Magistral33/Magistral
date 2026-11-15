@@ -988,8 +988,9 @@
               </layout>
              </widget>
             </item>
+           
             <item>
-             <spacer name="column1Spacer">
+             <spacer name="settingsColumn1Spacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -1001,7 +1002,7 @@
               </property>
              </spacer>
             </item>
-           </layout>
+</layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="settingsColumn2">
@@ -1193,8 +1194,9 @@
               </layout>
              </widget>
             </item>
+           
             <item>
-             <spacer name="column2Spacer">
+             <spacer name="settingsColumn2Spacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -1206,7 +1208,7 @@
               </property>
              </spacer>
             </item>
-           </layout>
+</layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="settingsColumn3">
@@ -1375,8 +1377,9 @@
               </layout>
              </widget>
             </item>
+           
             <item>
-             <spacer name="column3Spacer">
+             <spacer name="settingsColumn3Spacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -1388,7 +1391,7 @@
               </property>
              </spacer>
             </item>
-           </layout>
+</layout>
           </item>
          </layout>
         </item>
