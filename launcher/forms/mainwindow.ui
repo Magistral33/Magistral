@@ -847,32 +847,7 @@
             <property name="spacing">
              <number>14</number>
             </property>
-            <item>
-             <widget class="QGroupBox" name="groupBox">
-              <property name="title">
-               <string>Текущий графический ускоритель</string>
-              </property>
-              <layout class="QVBoxLayout" name="gpuLayout">
-               <property name="topMargin">
-                <number>26</number>
-               </property>
-               <item>
-                <widget class="QComboBox" name="cbListGPU">
-                 <property name="editable">
-                  <bool>false</bool>
-                 </property>
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
+                        <item>
              <widget class="QGroupBox" name="groupBox_2">
               <property name="title">
                <string>Настройки окна</string>
@@ -1246,8 +1221,11 @@
                </item>
                <item>
                 <widget class="QComboBox" name="cbSwadowsQuality">
-                 <property name="enabled">
-                  <bool>false</bool>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
                </item>

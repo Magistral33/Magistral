@@ -352,8 +352,6 @@ private:
 
     void showSettingsTab();
 
-    void slotOnSettingsGPUChanged(int idx);
-
     void slotApplyGraphSettings();
 
     void slotCancelGraphSettings();

@@ -256,9 +256,9 @@ void MainWindow::setGraphicsWidgets()
     });
 
 
-    connect(settings_ui->cbListGPU, &QComboBox::currentIndexChanged,
-            this, &MainWindow::slotOnSettingsGPUChanged);
 
+    // Списки заполняются до подключения обработчиков, чтобы не сработали
+    // лишние сигналы при построении интерфейса
     settings_ui->cbSwadowsQuality->addItem(tr("Низкое"));
     settings_ui->cbSwadowsQuality->addItem(tr("Среднее"));
     settings_ui->cbSwadowsQuality->addItem(tr("Высокое"));
@@ -269,20 +269,22 @@ void MainWindow::setGraphicsWidgets()
     settings_ui->cbShadowsMap->addItem(tr("2048"));
     settings_ui->cbShadowsMap->addItem(tr("4096"));
 
+    settings_ui->cbSwadowsQuality->setCurrentIndex(1);
+    settings_ui->cbShadowsMap->setCurrentIndex(1);
+
+    // Пресеты качества теней: каждому соответствует карта теней,
+    // число каскадов и дальность
     connect(settings_ui->cbSwadowsQuality, &QComboBox::currentIndexChanged, this, [this, settings_ui](int idx){
 
-        if (idx < shadowsPresets.size())
+        if (idx >= 0 && idx < static_cast<int>(shadowsPresets.size()))
         {
-            ulockShadowsSettings(settings_ui, false);
             auto sp = shadowsPresets[idx];
 
             settings_ui->cbShadowsMap->setCurrentIndex(sp.resolution_idx);
             settings_ui->hsShadowsCascades->setValue(sp.cascades);
             settings_ui->hsShadowsDistance->setValue(sp.distanse);
-        }
-        else
-        {
-            ulockShadowsSettings(settings_ui, true);
+            settings_ui->lShadowsCascades->setText(QString::number(sp.cascades));
+            settings_ui->lShadowsDistance->setText(QString::number(sp.distanse));
         }
 
         settings_ui->pbGraphApply->setEnabled(true);
@@ -290,14 +292,12 @@ void MainWindow::setGraphicsWidgets()
 
     connect(settings_ui->cbShowShadows, &QCheckBox::stateChanged, this, [this, settings_ui](int){
 
-        if (settings_ui->cbShowShadows->checkState() == Qt::CheckState::Checked)
-        {
-            settings_ui->cbSwadowsQuality->setEnabled(true);
-        }
-        else
-        {
-            settings_ui->cbSwadowsQuality->setEnabled(false);
-        }
+        const bool on = settings_ui->cbShowShadows->checkState() == Qt::CheckState::Checked;
+
+        settings_ui->cbSwadowsQuality->setEnabled(on);
+        settings_ui->cbShadowsMap->setEnabled(on);
+        settings_ui->hsShadowsCascades->setEnabled(on);
+        settings_ui->hsShadowsDistance->setEnabled(on);
 
         settings_ui->pbGraphApply->setEnabled(true);
     });
@@ -365,14 +365,6 @@ void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
         return;
     }
 
-    // список уже заполнен — второй раз не дублируем
-    if (settings_ui->cbListGPU->count() == static_cast<int>(gpus_info.size()))
-    {
-        return;
-    }
-
-    settings_ui->cbListGPU->blockSignals(true);
-    settings_ui->cbListGPU->clear();
 
     // Выбираем самый производительный GPU из найденных в качестве текущего
     int max_score = 0;
@@ -388,16 +380,13 @@ void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
             best_gpu_idx = i;
         }
 
-        settings_ui->cbListGPU->addItem(gpu_info.deviceName);
-    }
+}
 
-    settings_ui->cbListGPU->blockSignals(false);
 
     // Если видюха еще не настраивалась никогда
     if (current_gpu_idx == -1)
     {
         // выбираем лючшую из найденных
-        settings_ui->cbListGPU->setCurrentIndex(best_gpu_idx);
         current_gpu_idx = best_gpu_idx;
 
         setDefaultSettingsForChangedGPU(current_gpu_idx);
@@ -446,7 +435,7 @@ void MainWindow::setSettingsGPU(const gpus_info_list_t &gpus_info)
             current_gpu_idx = best_gpu_idx;
         }
 
-        settings_ui->cbListGPU->setCurrentIndex(current_gpu_idx);
+        
 
         auto &gpu_info = gpus_info[current_gpu_idx];
 
@@ -602,7 +591,7 @@ void MainWindow::updateGraphSettings(FieldsDataList &fd_list, Ui::SettingsWidget
 
     settings_ui->sbMaxFPS->setValue(findSetting(MAX_FPS, fd_list).second.toInt());
 
-    settings_ui->cbListGPU->setCurrentIndex(findSetting(PHYSICAL_DEVICE, fd_list).second.toInt());
+    
 
     settings_ui->sbDisplayNumber->setValue(findSetting(SCREEN_NUM, fd_list).second.toInt());
 
@@ -687,9 +676,9 @@ void MainWindow::applyGraphSettings(FieldsDataList &fd_list,
     fd_list[idx] = QPair<QString, QVariant>(MAX_FPS, settings_ui->sbMaxFPS->value());
 
     findSetting(PHYSICAL_DEVICE, fd_list, idx);
-    fd_list[idx] = QPair<QString, QVariant>(PHYSICAL_DEVICE, settings_ui->cbListGPU->currentIndex());
+    fd_list[idx] = QPair<QString, QVariant>(PHYSICAL_DEVICE, current_gpu_idx);
 
-    int gpu_idx = settings_ui->cbListGPU->currentIndex();
+    int gpu_idx = current_gpu_idx;
     if (gpu_idx >= 0 && gpu_idx < static_cast<int>(gpus_info.size()))
     {
         findSetting(PHYSICAL_DEVICE_VENDOR_ID, fd_list, idx);
@@ -753,6 +742,22 @@ void MainWindow::showSettingsTab()
     // при каждом показе вкладки перечитываем настройки с диска
     loadGraphicsSettings("settings");
 
+    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
+
+    // Индекс пресета мог прийти из настроек невалидным — тогда ставим
+    // «Среднее», чтобы поле не оставалось пустым
+    if (settings_ui->cbSwadowsQuality->currentIndex() < 0)
+    {
+        settings_ui->cbSwadowsQuality->setCurrentIndex(1);
+    }
+
+    if (settings_ui->cbShadowsMap->currentIndex() < 0)
+    {
+        settings_ui->cbShadowsMap->setCurrentIndex(1);
+    }
+
+    settings_ui->pbGraphApply->setEnabled(false);
+
     // список видеокарт может быть ещё не заполнен (проверка Vulkan
     // не выполнялась) — тогда заполняем его здесь
     if (settingsWindow != nullptr && !gpus_info.empty())
@@ -774,16 +779,6 @@ void MainWindow::setDefaultSettingsForChangedGPU(int gpu_idx)
     updateGraphSettings(fd_list, settings_ui);
 }
 
-//------------------------------------------------------------------------------
-//
-//------------------------------------------------------------------------------
-void MainWindow::slotOnSettingsGPUChanged(int idx)
-{
-    Ui::SettingsWidgets *settings_ui = settingsWindow->getUi();
-
-    setDefaultSettingsForChangedGPU(idx);
-    settings_ui->pbGraphApply->setEnabled(true);
-}
 
 //------------------------------------------------------------------------------
 //
@@ -808,8 +803,6 @@ void MainWindow::slotCancelGraphSettings()
 {
     updateGraphSettings(fd_list, settingsWindow->getUi());
     settingsWindow->getUi()->pbGraphApply->setEnabled(false);
-
-    ui->twMain->setCurrentIndex(0);
 }
 
 //------------------------------------------------------------------------------
