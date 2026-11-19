@@ -489,7 +489,7 @@ VkFormat getDepthFormat(int idx)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-void RouteViewer::initWindowTraits()
+vsg::ref_ptr<vsg::WindowTraits> RouteViewer::createWindowTraits(const std::string& title) const
 {
     auto samples_bit_flag = [](int s) -> VkSampleCountFlags
     {
@@ -514,23 +514,23 @@ void RouteViewer::initWindowTraits()
     // std::uint32_t vulkan_version;
     // vkEnumerateInstanceVersion(&vulkan_version);
 
-    windowTraits = vsg::WindowTraits::create();
-    windowTraits->x = settings.x;
-    windowTraits->y = settings.y;
-    windowTraits->width = settings.width;
-    windowTraits->height = settings.height;
-    // windowTraits->vulkanVersion = vulkan_version; // VSG и так берет самую новую версию
-    // windowTraits->swapchainPreferences.imageCount = 3;
-    windowTraits->screenNum = settings.screen_number;
-    windowTraits->fullscreen = settings.fullscreen;
-    windowTraits->windowTitle = settings.name;
-    windowTraits->decoration = settings.window_decoration;
-    windowTraits->samples = samples_bit_flag(settings.samples);
+    auto traits = vsg::WindowTraits::create();
+    traits->x = settings.x;
+    traits->y = settings.y;
+    traits->width = settings.width;
+    traits->height = settings.height;
+    // traits->vulkanVersion = vulkan_version; // VSG и так берет самую новую версию
+    // traits->swapchainPreferences.imageCount = 3;
+    traits->screenNum = settings.screen_number;
+    traits->fullscreen = settings.fullscreen;
+    traits->windowTitle = title;
+    traits->decoration = settings.window_decoration;
+    traits->samples = samples_bit_flag(settings.samples);
 
-    windowTraits->depthFormat = getDepthFormat(settings.depthFormat);
+    traits->depthFormat = getDepthFormat(settings.depthFormat);
 
-    windowTraits->debugLayer = settings.enableDebugLayer;
-    windowTraits->debugUtils = settings.enableDebugUtils;
+    traits->debugLayer = settings.enableDebugLayer;
+    traits->debugUtils = settings.enableDebugUtils;
 
     // Настройка вертикальной синхронизации (упрощенно - вкл/выкл)
     // MAILBOX = triple-buffered, no tearing, no stall on missed vsync
@@ -540,23 +540,33 @@ void RouteViewer::initWindowTraits()
     {
         if (settings.max_fps <= 0)
         {
-            windowTraits->swapchainPreferences.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
+            traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
         }
         else
         {
-            windowTraits->swapchainPreferences.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+            traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_FIFO_KHR;
         }
     }
     else
     {
-        windowTraits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+        traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 
-    // auto deviceFeatures = windowTraits->deviceFeatures = vsg::DeviceFeatures::create(); // VSG и так создает deviceFeatures по умолчанию
-    // deviceFeatures->get().samplerAnisotropy = VK_TRUE;                                  // и выставляет samplerAnisotropy в true
+    // auto deviceFeatures = traits->deviceFeatures = vsg::DeviceFeatures::create(); // VSG и так создает deviceFeatures по умолчанию
+    // deviceFeatures->get().samplerAnisotropy = VK_TRUE;                          // и выставляет samplerAnisotropy в true
 
-    auto deviceFeatures = windowTraits->deviceFeatures;
+    auto deviceFeatures = traits->deviceFeatures;
     deviceFeatures->get().depthClamp = VK_TRUE;
+
+    return traits;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void RouteViewer::initWindowTraits()
+{
+    windowTraits = createWindowTraits(settings.name);
 }
 
 //------------------------------------------------------------------------------

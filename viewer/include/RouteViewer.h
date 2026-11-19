@@ -80,6 +80,10 @@ private:
 
     void initVsgOptions();
     void initWindowTraits();
+
+    /// Создаёт настройки окна (размер, vsync, формат глубины и т.п.)
+    vsg::ref_ptr<vsg::WindowTraits> createWindowTraits(const std::string& title) const;
+
     void initWindow(bool try_screenNum_exception = true);
     void initCamera();
     void initScenegraph();
