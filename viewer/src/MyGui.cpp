@@ -98,7 +98,15 @@ void MyGui::record([[maybe_unused]] vsg::CommandBuffer& cb) const
                            ImGui::IsKeyPressed(ImGuiKey_RightAlt);
 
     // Статус вьювера
-    if (!params->status.isEmpty())
+    if (params->status.isEmpty())
+    {
+        // Пока идёт загрузка, статус ещё пуст — не показываем ничего
+    }
+    else if (params->loading_screen)
+    {
+        showLoadingScreen();
+    }
+    else
     {
         showStatus();
     }
@@ -263,6 +271,69 @@ void MyGui::record([[maybe_unused]] vsg::CommandBuffer& cb) const
     }
 
     showControlTooltip();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MyGui::showLoadingScreen() const
+{
+    ImGuiIO &io = ImGui::GetIO();
+    const ImVec2 display = io.DisplaySize;
+
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(display);
+
+    ImGuiWindowFlags flags = 0;
+    flags |= ImGuiWindowFlags_NoTitleBar;
+    flags |= ImGuiWindowFlags_NoResize;
+    flags |= ImGuiWindowFlags_NoMove;
+    flags |= ImGuiWindowFlags_NoCollapse;
+    flags |= ImGuiWindowFlags_NoScrollbar;
+    flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    flags |= ImGuiWindowFlags_NoNav;
+
+    bool open = true;
+
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.07f, 0.09f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::Begin("##loading_screen", &open, flags);
+    ImGui::PopStyleColor(2);
+
+    const float width = ImGui::GetWindowWidth();
+    const float height = ImGui::GetWindowHeight();
+
+    // Время для «бегущих» точек в строке статуса
+    const float dots = static_cast<float>(ImGui::GetTime() * 2.0);
+    std::string status = params->status.toStdString();
+    for (int i = 0; i < 3; ++i)
+    {
+        status += (i < static_cast<int>(dots) % 4) ? "." : " ";
+    }
+
+    // Название
+    const char *title = u8"RUSSIAN RAILWAY SIMULATOR";
+    const float title_scale = 2.4f;
+    ImGui::SetWindowFontScale(title_scale);
+    const ImVec2 title_size = ImGui::CalcTextSize(title);
+    ImGui::SetCursorPos(ImVec2((width - title_size.x) * 0.5f, height * 0.36f));
+    ImGui::TextUnformatted(title);
+
+    // Подзаголовок
+    const char *subtitle = u8"Твоя железная дорога начинается здесь!";
+    const float subtitle_scale = 1.2f;
+    ImGui::SetWindowFontScale(subtitle_scale);
+    const ImVec2 subtitle_size = ImGui::CalcTextSize(subtitle);
+    ImGui::SetCursorPos(ImVec2((width - subtitle_size.x) * 0.5f, height * 0.36f + title_size.y + 14.0f));
+    ImGui::TextUnformatted(subtitle);
+
+    // Текущий шаг загрузки
+    ImGui::SetWindowFontScale(1.0f);
+    const ImVec2 status_size = ImGui::CalcTextSize(status.c_str());
+    ImGui::SetCursorPos(ImVec2((width - status_size.x) * 0.5f, height * 0.36f + title_size.y + 60.0f));
+    ImGui::TextUnformatted(status.c_str());
+
+    ImGui::End();
 }
 
 //------------------------------------------------------------------------------

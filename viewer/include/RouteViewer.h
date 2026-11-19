@@ -85,6 +85,12 @@ private:
     vsg::ref_ptr<vsg::WindowTraits> createWindowTraits(const std::string& title) const;
 
     void initWindow(bool try_screenNum_exception = true);
+
+    /// Экран загрузки внутри главного окна: рисуется, пока грузятся
+    /// маршрут и подвижной состав, и убирается перед первым кадром игры
+    void initLoadingScreen();
+    void drawLoadingFrame();
+    void hideLoadingScreen();
     void initCamera();
     void initScenegraph();
 
@@ -149,6 +155,13 @@ private:
     vsg::ref_ptr<vsg::View>          view;
     vsg::ref_ptr<vsg::CommandGraph>  commandGraph;
     vsg::ref_ptr<vsg::Viewer>        viewer;
+
+    /// Экран загрузки: отдельный viewer на том же окне
+    vsg::ref_ptr<vsg::Viewer>        loading_viewer;
+    vsg::ref_ptr<vsg::Camera>        loading_camera;
+    vsg::ref_ptr<vsg::View>          loading_view;
+    vsg::ref_ptr<vsg::CommandGraph>  loading_command_graph;
+    bool                              is_loading_screen_hidden = false;
 
     vsg::ref_ptr<vsg::Group>             root;
     vsg::ref_ptr<vsg::ShadowSettings>    shadowSettings;

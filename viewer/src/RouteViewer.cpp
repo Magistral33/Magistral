@@ -235,6 +235,11 @@ void RouteViewer::initialize(int argc, char* argv[])
     initCommandGraph();
     initViewer();
 
+    // Пока идёт загрузка маршрута и модели, показываем экран загрузки.
+    // Он рисуется отдельным viewer'ом на том же окне, чтобы не было
+    // пустого чёрного кадра до поступления данных
+    initLoadingScreen();
+
     checkPhysicalDeviceProperties();
 
     vehicles_handler->set_camera_pos(&lookAt->eye);
@@ -256,6 +261,9 @@ int RouteViewer::run()
     while (!is_ready)
     {
         QApplication::processEvents();
+
+        // Экран загрузки должен быть живым, пока идёт ожидание данных
+        drawLoadingFrame();
 
         if (is_connection_abandoned)
         {
@@ -280,6 +288,7 @@ int RouteViewer::run()
     }
 
     auto next_frame_time = clock::now();
+    bool is_first_frame = true;
 
     while (viewer->advanceToNextFrame())
     {
@@ -311,6 +320,13 @@ int RouteViewer::run()
 
             viewer->recordAndSubmit();
             viewer->present();
+
+            // Первый кадр игры на экране — экран загрузки больше не нужен
+            if (is_first_frame)
+            {
+                is_first_frame = false;
+                hideLoadingScreen();
+            }
 
             // Планируем следующий кадр
             if (target_frame_time.count() > 0)
@@ -856,6 +872,72 @@ void RouteViewer::configureShaders()
     options->shaderSets["flat"] = flat_shader;
     options->shaderSets["pbr"] = pbr_shader;
     options->shaderSets["phong"] = phong_shader;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void RouteViewer::initLoadingScreen()
+{
+    const double aspect = static_cast<double>(window->extent2D().width) /
+                          static_cast<double>(window->extent2D().height);
+
+    // Камера и пустая сцена для экрана загрузки: окно одно, второй экземпляр
+    // Vulkan не нужен, поэтому драйвер не загружается дважды
+    loading_camera = vsg::Camera::create(
+        vsg::Perspective::create(60.0, aspect, 0.1, 100.0),
+        vsg::LookAt::create(vsg::dvec3(0.0, -1.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0)),
+        vsg::ViewportState::create(window->extent2D()));
+
+    loading_view = vsg::View::create(loading_camera, vsg::Group::create());
+
+    auto loading_render_graph = vsg::RenderGraph::create(window);
+    loading_render_graph->addChild(loading_view);
+
+    loading_command_graph = vsg::CommandGraph::create(window, loading_render_graph);
+
+    // Отдельный viewer поверх того же окна — свой цикл отрисовки и свои
+    // обработчики событий, но GPU и окно те же
+    loading_viewer = vsg::Viewer::create();
+    loading_viewer->addWindow(window);
+    loading_viewer->addEventHandler(vsgImGui::SendEventsToImGui::create());
+    loading_viewer->addEventHandler(vsg::CloseHandler::create(loading_viewer));
+    loading_viewer->assignRecordAndSubmitTaskAndPresentation({loading_command_graph});
+
+    GUIparams->loading_screen = true;
+
+    LOG_INFO("Loading screen is created");
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void RouteViewer::drawLoadingFrame()
+{
+    if (!loading_viewer || is_loading_screen_hidden) return;
+
+    loading_viewer->handleEvents();
+    loading_viewer->update();
+    loading_viewer->recordAndSubmit();
+    loading_viewer->present();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void RouteViewer::hideLoadingScreen()
+{
+    if (is_loading_screen_hidden) return;
+
+    is_loading_screen_hidden = true;
+    GUIparams->loading_screen = false;
+
+    loading_viewer = {};
+    loading_camera = {};
+    loading_view = {};
+    loading_command_graph = {};
+
+    LOG_INFO("Loading screen is hidden");
 }
 
 //------------------------------------------------------------------------------
