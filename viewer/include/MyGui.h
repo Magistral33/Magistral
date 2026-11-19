@@ -128,9 +128,6 @@ struct GUIParams final : public vsg::Inherit<vsg::Object, GUIParams>
 
     QString status = "";
     QString physicalDeviceName = "";
-
-    /// Идёт загрузка маршрута и модели: вместо HUD показывается экран загрузки
-    bool loading_screen = false;
 };
 
 //------------------------------------------------------------------------------
@@ -159,8 +156,6 @@ private:
     float font_size = 20.0f;    
 
     void showStatus() const;
-
-    void showLoadingScreen() const;
 
     void showQuitDialog() const;
 
