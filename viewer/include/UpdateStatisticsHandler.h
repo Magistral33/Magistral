@@ -26,6 +26,7 @@ private:
 
     static constexpr uint8_t FRAME_ARRAY_SIZE = 250;
     uint8_t frame_index = 0;
+    uint16_t filled_frames = 0;
     std::array<std::chrono::steady_clock::time_point, FRAME_ARRAY_SIZE> frames_timepoints;
     std::array<double, FRAME_ARRAY_SIZE> frames_FPS;
 };

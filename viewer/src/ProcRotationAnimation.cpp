@@ -1,4 +1,5 @@
 #include "ProcRotationAnimation.h"
+#include "Logger.h"
 
 #include "CfgReader.h"
 #include "ProcAnimation.h"

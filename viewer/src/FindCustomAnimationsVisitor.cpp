@@ -15,6 +15,8 @@
 #include <vsg/core/Visitor.h>
 #include <vsg/nodes/MatrixTransform.h>
 #include <vsg/nodes/Node.h>
+#include <vsg/nodes/StateGroup.h>
+#include <vsg/nodes/VertexIndexDraw.h>
 #include <vsg/lighting/SpotLight.h>
 #include <vsg/utils/PropagateDynamicObjects.h>
 
@@ -63,8 +65,6 @@ void FindCustomAnimationsVisitor::apply(vsg::Group& group)
         return;
     }
 
-    // Некоторые варианты экспорта в .gltf присваивают имя источника света
-    // родительскому узлу, а сам свет оставляют безымянным, исправляем это
     for (vsg::ref_ptr<vsg::Node>& child : group.children)
     {
         if (auto light = child.cast<vsg::Light>())
@@ -76,11 +76,58 @@ void FindCustomAnimationsVisitor::apply(vsg::Group& group)
         }
     }
 
-    vsg::ref_ptr<ProcAnimation> animation = create_animation(name, group);
-    if (animation)
+    // Имя может стоять и на внешней группе, и на внутреннем StateGroup glTF-модели.
+    // Оборачиваем только один раз, иначе вращение применится дважды.
+    if (!group.cast<vsg::MatrixTransform>() && group.children.size() == 1 && wrapped_names.insert(name).second)
     {
-        animation->name = name;
-        animations->thread_safe_insert({animation->getSignalID(), animation});
+        vsg::ref_ptr<vsg::Node> wrapped = group.children[0];
+
+        std::string already_wrapped;
+        wrapped->getValue("rrs_anim_wrapper", already_wrapped);
+
+        vsg::ref_ptr<vsg::MatrixTransform> mt;
+        if (already_wrapped == name && wrapped.cast<vsg::MatrixTransform>())
+        {
+            // Модель загружается повторно (одна и та же деталь у нескольких экземпляров ПЕ).
+            // Переиспользуем обёртку, иначе вращение задвоится, а общий узел потянет
+            // за собой все экземпляры сразу.
+            mt = wrapped.cast<vsg::MatrixTransform>();
+            LOG_INFO("FCA: REUSE wrapper '%s' mt=%p", name.c_str(), (void*)mt.get());
+        }
+        else
+        {
+            mt = vsg::MatrixTransform::create();
+            mt->matrix = vsg::dmat4(1.0);
+            mt->setValue("rrs_anim_wrapper", name);
+            mt->addChild(group.children[0]);
+            group.children[0] = mt;
+
+            const char* kind = "Node";
+            if (wrapped.cast<vsg::MatrixTransform>()) kind = "MatrixTransform";
+            else if (wrapped.cast<vsg::VertexIndexDraw>()) kind = "VertexIndexDraw";
+            else if (wrapped.cast<vsg::StateGroup>()) kind = "StateGroup";
+            else if (wrapped.cast<vsg::Group>()) kind = "Group";
+
+            size_t kids = 0;
+            if (auto wrapped_group = wrapped.cast<vsg::Group>()) kids = wrapped_group->children.size();
+            (void)kids;
+        }
+
+        vsg::ref_ptr<ProcAnimation> animation = create_animation_for_matrix(name, *mt);
+        if (animation)
+        {
+            animation->name = name;
+            animations->thread_safe_insert({animation->getSignalID(), animation});
+        }
+    }
+    else
+    {
+        vsg::ref_ptr<ProcAnimation> animation = create_animation(name, group);
+        if (animation)
+        {
+            animation->name = name;
+            animations->thread_safe_insert({animation->getSignalID(), animation});
+        }
     }
 
     group.traverse(*this);
@@ -117,7 +164,6 @@ void FindCustomAnimationsVisitor::reconfigure_animations()
         vsg::ref_ptr<ProcAnimation> animation = deferred_animation.animation;
 
         vsg::ref_ptr<vsg::Object> new_object = duplicate->duplicates[deferred_animation.node];
-
 
         if (vsg::ref_ptr<ProcVisibleAnimation> visible = animation.cast<ProcVisibleAnimation>())
         {
@@ -196,6 +242,29 @@ vsg::ref_ptr<ProcAnimation> FindCustomAnimationsVisitor::create_animation(const 
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+vsg::ref_ptr<ProcAnimation> FindCustomAnimationsVisitor::create_animation_for_matrix(const std::string& name, vsg::MatrixTransform& mt)
+{
+    std::string file_path = animations_dir + name + ".xml";
+
+    CfgReader cfg;
+    if (cfg.load(file_path.c_str()))
+    {
+        const auto config_section = cfg.getFirstSection("AnalogRotation");
+        if (!config_section.isNull())
+        {
+            const auto animation = ProcRotationAnimation::create(vsg::ref_ptr<vsg::MatrixTransform>(&mt));
+            if (animation && animation->load(cfg))
+            {
+                const std::scoped_lock pdo_lock(pdo->mutex);
+                pdo->tag(&mt);
+                deferred_animations.emplace_back(DeferredAnimation{&mt, animation});
+                return animation;
+            }
+        }
+    }
+    return nullptr;
+}
+
 vsg::ref_ptr<ProcAnimation> FindCustomAnimationsVisitor::create_animation(const std::string &name, vsg::Light &light)
 {
     std::string file_path = animations_dir + name + ".xml";
