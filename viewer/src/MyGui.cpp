@@ -97,6 +97,13 @@ void MyGui::record([[maybe_unused]] vsg::CommandBuffer& cb) const
                            ImGui::IsKeyPressed(ImGuiKey_LeftAlt) ||
                            ImGui::IsKeyPressed(ImGuiKey_RightAlt);
 
+    // Загрузка: пока симулятор не прислал всё необходимое, окно не должно
+    // оставаться белым или пустым — показываем приветствие и этап загрузки
+    if (params->loading_screen)
+    {
+        showLoadingScreen();
+    }
+
     // Статус вьювера
     if (!params->status.isEmpty())
     {
@@ -263,6 +270,100 @@ void MyGui::record([[maybe_unused]] vsg::CommandBuffer& cb) const
     }
 
     showControlTooltip();
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void MyGui::showLoadingScreen() const
+{
+    ImGuiIO &io = ImGui::GetIO();
+    const ImVec2 display = io.DisplaySize;
+
+    // Размер окна ещё неизвестен — значит, первый кадр. Экран загрузки
+    // начнёт рисоваться со следующего кадра, автоматически
+    if (display.x < 1.0f || display.y < 1.0f)
+    {
+        return;
+    }
+
+    // Задержка в пару кадров: окно загрузки подаём не с самого первого кадра,
+    // а когда окно уже успело показаться. Так надёжнее попасть на экран
+    static int shown_frames = 0;
+    if (++shown_frames < 3)
+    {
+        return;
+    }
+
+    // Закрашиваем всё окно тёмным фоном. Текст рисуем внутри этого же окна:
+    // ImGui обрезает всё, что выходит за его пределы, по окну
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.06f, 0.07f, 0.09f, 0.96f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowFocus();
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(display);
+
+    // Фон должен перекрывать всё, включая окна интерфейса позади
+    ImGui::GetBackgroundDrawList()->AddRectFilled(
+        ImVec2(0.0f, 0.0f), display, IM_COL32(15, 18, 23, 255));
+
+    ImGuiWindowFlags flags = 0;
+    flags |= ImGuiWindowFlags_NoTitleBar;
+    flags |= ImGuiWindowFlags_NoResize;
+    flags |= ImGuiWindowFlags_NoMove;
+    flags |= ImGuiWindowFlags_NoCollapse;
+    flags |= ImGuiWindowFlags_NoScrollbar;
+    flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    flags |= ImGuiWindowFlags_NoNav;
+    flags |= ImGuiWindowFlags_NoInputs;
+    flags |= ImGuiWindowFlags_NoBackground;
+
+    bool open = true;
+    ImGui::Begin("##loading_bg", &open, flags);
+
+    const float width = ImGui::GetWindowWidth();
+    const float height = ImGui::GetWindowHeight();
+    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    const ImVec2 origin = ImGui::GetWindowPos();
+
+    const char *welcome = u8"Вас приветствует симулятор";
+    const ImVec2 welcome_size = ImGui::CalcTextSize(welcome);
+
+    const char *title = u8"МАГИСТРАЛЬ";
+    const ImVec2 title_size = ImGui::CalcTextSize(title);
+
+    // Этап загрузки: текст постоянный, служебные сообщения модулей
+    // в этот экран не попадают
+    std::string status = u8"идёт загрузка сценария";
+    const int dots = static_cast<int>(ImGui::GetTime() * 2.0);
+    for (int i = 0; i < 3; ++i)
+    {
+        status += (i < dots % 4) ? "." : " ";
+    }
+    const ImVec2 status_size = ImGui::CalcTextSize(status.c_str());
+
+    const float welcome_scale = 1.9f;
+    const float title_scale = 2.6f;
+    const float line_welcome = welcome_size.y * welcome_scale;
+    const float line_title = title_size.y * title_scale;
+
+    const float top = height * 0.38f;
+    draw_list->AddText(ImGui::GetFont(), welcome_size.y * welcome_scale,
+                       ImVec2(origin.x + (width - welcome_size.x * welcome_scale) * 0.5f, origin.y + top),
+                       IM_COL32(225, 225, 225, 255), welcome);
+    draw_list->AddText(ImGui::GetFont(), title_size.y * title_scale,
+                       ImVec2(origin.x + (width - title_size.x * title_scale) * 0.5f,
+                              origin.y + top + line_welcome + 10.0f),
+                       IM_COL32(240, 180, 80, 255), title);
+    draw_list->AddText(ImGui::GetFont(), status_size.y,
+                       ImVec2(origin.x + (width - status_size.x) * 0.5f,
+                              origin.y + top + line_welcome + line_title + 40.0f),
+                       IM_COL32(190, 190, 190, 255), status.c_str());
+
+    ImGui::End();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor(2);
 }
 
 //------------------------------------------------------------------------------

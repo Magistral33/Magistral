@@ -281,6 +281,13 @@ int RouteViewer::run()
 
     auto next_frame_time = clock::now();
 
+    // Экран загрузки переключается по времени, готовность сцены не нужна
+    const auto loading_started_at = clock::now();
+
+    // Для периодического вывода FPS в журнал
+    const auto fps_log_started_at = clock::now();
+    int64_t last_fps_log_second = -1;
+
     while (viewer->advanceToNextFrame())
     {
         try
@@ -303,6 +310,39 @@ int RouteViewer::run()
             QApplication::processEvents();
             viewer->handleEvents();
             viewer->update();
+
+            // Экран загрузки показываем ровно 10 секунд с начала отрисовки,
+            // без ожидания готовности — он не должен висеть дольше
+            if (GUIparams->loading_screen)
+            {
+                const auto shown_seconds = std::chrono::duration_cast<std::chrono::seconds>(
+                    clock::now() - loading_started_at).count();
+
+                if (shown_seconds >= 10)
+                {
+                    GUIparams->loading_screen = false;
+                    GUIparams->status = QString("");
+                    LOG_INFO("Loading screen is hidden");
+                }
+            }
+
+            // Раз в 2 секунды пишем в журнал фактический FPS: по нему видно,
+            // подтормаживает ли кадр при движении камеры
+            if (GUIparams->statistics_handler)
+            {
+                const auto now_seconds = std::chrono::duration_cast<std::chrono::seconds>(
+                    clock::now() - fps_log_started_at).count();
+                if (now_seconds != last_fps_log_second)
+                {
+                    last_fps_log_second = now_seconds;
+                    if (now_seconds % 2 == 0)
+                    {
+                        LOG_INFO("[fps] средний %.1f, минимум %.1f",
+                                 GUIparams->statistics_handler->getAverageFPS(),
+                                 GUIparams->statistics_handler->getLowestFPS());
+                    }
+                }
+            }
 
             if (screenshot_writer && screenshot_writer->isScreeenshot())
             {
@@ -405,6 +445,9 @@ void RouteViewer::initVsgOptions()
     GUIparams = GUIParams::create();
     GUIparams->train_profile_backward = settings.train_profile_backward;
     GUIparams->train_profile_forward = settings.train_profile_forward;
+
+    // До первого кадра с данными окно показывает экран загрузки
+    GUIparams->loading_screen = true;
 
     GUIparams->hud_background = ImVec4(settings.hud_background.x, settings.hud_background.y,
                                        settings.hud_background.z, settings.hud_background.w);
@@ -1105,7 +1148,9 @@ bool RouteViewer::loadRoute()
 void RouteViewer::slotRecvLogMessage(QString msg)
 {
     LOG_INFO("%s", msg.toStdString().c_str());
-    GUIparams->status = msg;
+
+    // Служебные сообщения симулятора остаются в журнале, но не выводятся
+    // в интерфейс: раньше они всплывали поверх кабины и экрана загрузки
 }
 
 //------------------------------------------------------------------------------
@@ -1133,8 +1178,8 @@ void RouteViewer::slotGetRouteInfoData(QByteArray &data)
     }
     is_route = true;
 
-    GUIparams->status = QString("Загрузка маршрута...");
-
+    // Строку статуса не выставляем: во время загрузки показывается
+    // отдельный экран, а после неё всплывающее окошко не нужно
     simulator_route_info_t route_info;
     route_info.deserialize(data);
     settings.route_dir_name = route_info.route_dir_name.toStdString();
@@ -1161,8 +1206,6 @@ void RouteViewer::slotGetSignalsData(QByteArray &sig_data)
         return;
     }
     is_signals = true;
-
-    GUIparams->status = QString("Загрузка светофоров...");
 
     is_signals = traffic_lights_handler->load(sig_data, settings.route_dir_full_path,
                                               world_culling, options);
@@ -1231,12 +1274,12 @@ void RouteViewer::slotGetVehicleInfoData(QByteArray &data)
         return;
     }
 
-    GUIparams->status = QString("Загрузка подвижного состава...");
-
     is_vehicles = vehicles_handler->load(data, settings, options);
 
     slotOnCurrentVehicleChanged(vehicles_handler->getCurrentVehicleIndex(), -1);
 
+    // Данные пришли: маршрут, станции, светофоры и ПЕ. Строку статуса
+    // не выставляем — во время загрузки показывается отдельный экран
     GUIparams->status = QString("");
 
     if (!is_vehicles)
@@ -1282,6 +1325,10 @@ void RouteViewer::slotGetVehicleInfoData(QByteArray &data)
     tcp_client->sendTrainProfileRequest(static_cast<double>(settings.train_profile_update_interval) * 0.001,
                                         settings.train_profile_backward,
                                         settings.train_profile_forward);
+
+    // Данные о ПЕ пришли, модель читается с диска в фоновом потоке.
+    // Экран загрузки держим, пока эта загрузка не закончится
+    is_data_ready = true;
 }
 
 //------------------------------------------------------------------------------
@@ -1349,6 +1396,48 @@ void RouteViewer::slotUpdated()
     // Камера в кабину ПЕ через фиктивное нажатие F1
     vsg::KeyPressEvent keyPress(window, viewer->getFrameStamp()->time, vsg::KEY_F1, vsg::KEY_F1, vsg::MODKEY_OFF);
     upd_viewer_handler->apply(keyPress);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// Проверяет, закончилась ли фоновая загрузка сцены.
+// Нужна, чтобы не убирать экран загрузки, пока модель ПЕ и светофоры
+// ещё читаются с диска фоновыми потоками.
+//------------------------------------------------------------------------------
+bool RouteViewer::isSceneLoadingFinished() noexcept
+{
+    if (!is_data_ready)
+    {
+        return false;
+    }
+
+    if (!viewer || viewer->recordAndSubmitTasks.empty())
+    {
+        return false;
+    }
+
+    // Сцена считается загруженной, когда модель локомотива перестала грузиться.
+    // Критерий — нет живых запросов на чтение файлов моделей. Часть моделей
+    // светофоров не компилируется и запрашивается повторно, но такие запросы
+    // снимаются сразу и на счётчик не влияют
+    auto pager = viewer->recordAndSubmitTasks.front()->databasePager;
+    if (!pager)
+    {
+        return true;
+    }
+
+    static int quiet_frames = 0;
+    if (pager->numActiveRequests.load() > 0)
+    {
+        quiet_frames = 0;
+        return false;
+    }
+
+    // Ещё 1 модель ТУ10 грузится дольше остальных, поэтому ждём паузу
+    // в несколько кадров — так счётчик успевает подрасти, если чтение идёт
+    return ++quiet_frames > 20;
 }
 
 //------------------------------------------------------------------------------

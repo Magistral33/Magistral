@@ -118,8 +118,12 @@ private slots:
 
     void slotOnCurrentVehicleChanged(int newIndex, int oldIndex);
 
+    /// Проверяет, закончилась ли фоновая загрузка сцены (модель, светофоры)
+    bool isSceneLoadingFinished() noexcept;
+
 private:
     bool  is_ready = false;
+    bool  is_data_ready = false;
     bool  is_connection_abandoned = false;
     bool  is_route = false;
     bool  is_signals = false;
